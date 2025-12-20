@@ -8,7 +8,7 @@ import {
   ExternalLink, ArrowUpRight, 
   Filter, Search, Layers, Activity, AlertCircle,
   TrendingUp, Sun, Moon, X, Info, MessageSquare,
-  ArrowLeft, RefreshCw, Database,
+  ArrowLeft, 
   ChevronDown, Flame
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -102,7 +102,6 @@ export default function Dashboard() {
   const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
   const [readme, setReadme] = useState<string | null>(null);
   const [readmeLoading, setReadmeLoading] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [semanticQuery, setSemanticQuery] = useState('');
   const [isSearchingSemantic, setIsSearchingSemantic] = useState(false);
@@ -238,42 +237,6 @@ export default function Dashboard() {
   }, [selectedRepo]);
 
 
-  const handleForceUpdate = async () => {
-    if (isUpdating) return;
-    
-    const confirmed = confirm('This will trigger a full database sync. It may take 2-5 minutes. Continue?');
-    if (!confirmed) return;
-    
-    setIsUpdating(true);
-    setError(null);
-    
-    try {
-      const res = await fetch(`${API_URL}/api/update`, { 
-        method: 'POST',
-        signal: AbortSignal.timeout(180000) // 3 minute timeout
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        alert('✅ Update triggered successfully! Refreshing data in 2 minutes...');
-        // Auto-refresh after 2 minutes
-        setTimeout(() => {
-          fetchTrackerData(1);
-          setIsUpdating(false);
-        }, 120000);
-      } else {
-        throw new Error(data.error || 'Failed to trigger update');
-      }
-    } catch (err: any) {
-      console.error('Update error:', err);
-      const errorMsg = err.name === 'TimeoutError' 
-        ? 'Update request timed out. Check the server logs.'
-        : 'Failed to start update. Please try again.';
-      alert(`❌ ${errorMsg}`);
-      setIsUpdating(false);
-      setError(errorMsg);
-    }
-  };
 
 
   const handleSubscribe = async (e: React.FormEvent) => {
@@ -751,20 +714,12 @@ export default function Dashboard() {
               {displayedRepos.length === 0 ? (
                 <div className={`border p-12 sm:p-20 rounded-[2rem] sm:rounded-[3rem] text-center flex flex-col items-center justify-center ${theme === 'dark' ? 'bg-zinc-900/10 border-zinc-900' : 'bg-zinc-50/50 border-zinc-100 shadow-inner'}`}>
                   <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mb-6 ${theme === 'dark' ? 'bg-zinc-950' : 'bg-white shadow-sm'}`}>
-                    <Database size={24} className={theme === 'dark' ? 'text-zinc-800' : 'text-zinc-200'} />
+                    <AlertCircle size={24} className={theme === 'dark' ? 'text-zinc-800' : 'text-zinc-200'} />
                   </div>
                   <h4 className="text-lg sm:text-xl font-black tracking-tight mb-2">No Projects Detected</h4>
                   <p className={`max-w-xs mx-auto text-xs sm:text-sm font-medium leading-relaxed mb-8 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                    The database is currently empty. Trigger a **Deep Scan** or **Daily Sync** to begin discovery.
+                    The database is currently empty.
                   </p>
-                  <ShinyButton 
-                    onClick={handleForceUpdate}
-                    disabled={isUpdating}
-                    className="px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-3"
-                  >
-                    {isUpdating ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} className="fill-current" />}
-                    Initialize Discovery
-                  </ShinyButton>
                 </div>
               ) : (
                 displayedRepos.map((repo, idx) => (
