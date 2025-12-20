@@ -12,6 +12,14 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+// Magic UI Components
+import { GridPattern } from '@/components/magicui/grid-pattern';
+import { WordRotate } from '@/components/magicui/word-rotate';
+import { NumberTicker } from '@/components/magicui/number-ticker';
+import { ShinyButton } from '@/components/magicui/shiny-button';
+import { BlurFade } from '@/components/magicui/blur-fade';
+import { cn } from '@/lib/utils';
+
 // API Configuration - Backend URL for direct API calls
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -504,7 +512,17 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'} selection:bg-blue-500/30 font-sans`}>
+    <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'} selection:bg-blue-500/30 font-sans relative`}>
+      <GridPattern
+        width={40}
+        height={40}
+        x={-1}
+        y={-1}
+        className={cn(
+          "[mask-image:radial-gradient(1000px_circle_at_center,white,transparent)]",
+          theme === 'dark' ? 'fill-blue-500/5 stroke-blue-500/10' : 'fill-blue-500/5 stroke-blue-500/5'
+        )}
+      />
       {/* Navbar */}
       <nav className={`border-b sticky top-0 z-50 backdrop-blur-xl ${theme === 'dark' ? 'border-zinc-900 bg-zinc-950/50' : 'border-zinc-100 bg-white/80'}`}>
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
@@ -577,16 +595,17 @@ export default function Dashboard() {
             </button>
             */}
             
-            <button 
+            <ShinyButton 
               onClick={() => setIsSubscribeModalOpen(true)}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                 theme === 'dark' 
-                  ? 'bg-blue-600/10 border-blue-500/30 text-blue-400 hover:bg-blue-600/20' 
-                  : 'bg-blue-50 border-blue-100 text-blue-600 hover:bg-blue-100 shadow-sm'
+                  ? 'border-blue-500/30' 
+                  : 'border-blue-100 shadow-sm'
               }`}
             >
               <span className="hidden sm:inline">Stay Notified</span>
-            </button>
+              <span className="sm:hidden">Notify</span>
+            </ShinyButton>
 
             <button 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -758,13 +777,21 @@ export default function Dashboard() {
             <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 ${theme === 'dark' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
               GitHub Trend Radar
             </div>
-            <h1 className={`text-4xl sm:text-7xl font-black tracking-tighter mb-6 leading-[1.1] ${
-              theme === 'dark' 
-                ? 'bg-gradient-to-br from-white via-zinc-200 to-zinc-600 bg-clip-text text-transparent' 
-                : 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-blue-600 bg-clip-text text-transparent'
-            }`}>
-              Spot the next big thing.
-            </h1>
+            <div className="flex flex-col sm:flex-row items-baseline gap-x-4">
+              <h1 className={`text-4xl sm:text-7xl font-black tracking-tighter mb-2 leading-[1.1] ${
+                theme === 'dark' 
+                  ? 'bg-gradient-to-br from-white via-zinc-200 to-zinc-600 bg-clip-text text-transparent' 
+                  : 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-blue-600 bg-clip-text text-transparent'
+              }`}>
+                Spot the next
+              </h1>
+              <WordRotate 
+                words={["big thing.", "viral repo.", "trend shift.", "unicorn."]}
+                className={`text-4xl sm:text-7xl font-black tracking-tighter mb-6 leading-[1.1] ${
+                  theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+                }`}
+              />
+            </div>
             <p className={`${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'} text-lg sm:text-xl max-w-2xl font-medium leading-relaxed`}>
               Tracking the fastest-growing open source projects and decoding developer intent in real-time.
             </p>
@@ -923,19 +950,19 @@ export default function Dashboard() {
                   <p className={`max-w-xs mx-auto text-xs sm:text-sm font-medium leading-relaxed mb-8 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                     The database is currently empty. Trigger a **Deep Scan** or **Daily Sync** to begin discovery.
                   </p>
-                  <button 
+                  <ShinyButton 
                     onClick={handleForceUpdate}
                     disabled={isUpdating}
-                    className="px-6 sm:px-8 py-3 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-3"
+                    className="px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-3"
                   >
-                    {isUpdating ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} className="fill-white" />}
+                    {isUpdating ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} className="fill-current" />}
                     Initialize Discovery
-                  </button>
+                  </ShinyButton>
                 </div>
               ) : (
                 displayedRepos.map((repo, idx) => (
-              <div 
-                key={repo.full_name} 
+                <BlurFade key={repo.full_name} delay={idx * 0.05} inView>
+                  <div 
                     onClick={() => setSelectedRepo(repo)}
                     className={`group border transition-all p-5 sm:p-8 rounded-[2rem] sm:rounded-3xl relative overflow-hidden cursor-pointer ${
                       theme === 'dark' 
@@ -944,12 +971,12 @@ export default function Dashboard() {
                     }`}
                   >
                     <div className="absolute top-0 right-0 p-5 sm:p-8">
-                  <div className="flex flex-col items-end gap-2">
+                      <div className="flex flex-col items-end gap-2">
                         <div className="flex items-center gap-1.5">
                           <TrendingUp size={14} className="text-blue-500 sm:size-4" />
                           <span className={`text-xl sm:text-3xl font-black tabular-nums tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-                            {repo.velocity_metrics?.velocity_7d?.toFixed(1) || '0.0'}
-                    </span>
+                            <NumberTicker value={repo.velocity_metrics?.velocity_7d || 0} decimalPlaces={1} />
+                          </span>
                         </div>
                         <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`}>★/day (7d)</span>
                         
@@ -969,19 +996,19 @@ export default function Dashboard() {
                             {repo.velocity_metrics.trend === 'cooling' && '❄️'}
                           </div>
                         )}
-                  </div>
-                </div>
+                      </div>
+                    </div>
 
                     <div className="flex flex-col h-full lg:max-w-[calc(100%-140px)]">
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
                         <div className={`px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-black tracking-tighter ${theme === 'dark' ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-50 text-blue-600'}`}>#{idx + 1}</div>
                         <h2 className={`text-lg sm:text-2xl font-black transition-colors tracking-tight ${theme === 'dark' ? 'group-hover:text-blue-400' : 'group-hover:text-blue-600'}`}>
-                      {repo.name}
-                    </h2>
-                    <a 
-                      href={repo.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                          {repo.name}
+                        </h2>
+                        <a 
+                          href={repo.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
                           className={`p-1 sm:p-1.5 rounded-lg border transition-all ${
                             theme === 'dark' 
                               ? 'bg-zinc-950 border-zinc-800 text-zinc-600 hover:text-white hover:border-zinc-700' 
@@ -989,33 +1016,34 @@ export default function Dashboard() {
                           }`}
                         >
                           <ArrowUpRight size={12} className="sm:size-3.5" />
-                    </a>
-                  </div>
-                  
+                        </a>
+                      </div>
+                      
                       <p className={`text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed font-medium line-clamp-2 max-w-2xl ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                    {repo.description}
-                  </p>
+                        {repo.description}
+                      </p>
 
                       <div className="mt-auto flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4">
                         <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                           <Star size={12} className="text-yellow-500 sm:size-3.5" />
-                          {(repo.stars || 0).toLocaleString()} <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">stars</span>
-                    </div>
+                          <NumberTicker value={repo.stars || 0} /> <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">stars</span>
+                        </div>
                         <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                           <GitFork size={12} className={`sm:size-3.5 ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`} />
-                          {(repo.forks || 0).toLocaleString()} <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">forks</span>
-                    </div>
+                          <NumberTicker value={repo.forks || 0} /> <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">forks</span>
+                        </div>
                         <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                           <div className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-blue-500 ${theme === 'dark' ? 'shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''}`}></div>
-                      {repo.language}
-                    </div>
+                          {repo.language}
+                        </div>
                         <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                           <Calendar size={12} className={`sm:size-3.5 ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`} />
                           {repo.days_old}d
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </BlurFade>
                 ))
               )}
 
