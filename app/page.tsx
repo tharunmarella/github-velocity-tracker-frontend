@@ -98,7 +98,6 @@ export default function Dashboard() {
   const [isTranslating, setIsTranslating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isBackfilling, setIsBackfilling] = useState(false);
-  const [showReadme, setShowReadme] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [timeHorizon, setTimeHorizon] = useState<number | null>(null); // null = show all repos
   const [semanticQuery, setSemanticQuery] = useState('');
@@ -192,7 +191,6 @@ export default function Dashboard() {
       setReadme(null);
       setOriginalReadme(null);
       setIsTranslating(false);
-      setShowReadme(false);
       fetch(`${API_URL}/api/readme?fullName=${selectedRepo.full_name}`)
       .then(res => res.json())
       .then(data => {
@@ -514,7 +512,6 @@ export default function Dashboard() {
             className="flex items-center gap-2 cursor-pointer shrink-0" 
             onClick={() => {
               setSelectedRepo(null);
-              setShowReadme(false);
               fetchTrackerData(1);
             }}
           >
@@ -612,7 +609,6 @@ export default function Dashboard() {
               <button 
                 onClick={() => {
                   setSelectedRepo(null);
-                  setShowReadme(false);
                 }}
                 className={`p-3 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all ${
                   theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700' : 'bg-white border-zinc-100 text-zinc-500 hover:text-zinc-900 hover:border-zinc-200 shadow-sm'
@@ -726,22 +722,9 @@ export default function Dashboard() {
             </div>
 
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-              <div className="flex items-center justify-between gap-4">
-                <div className={`flex items-center gap-2 sm:gap-3 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                  <MessageSquare size={16} className="sm:size-[18px]" />
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Market Breakdown</h4>
-                </div>
-                
-                <button 
-                  onClick={() => setShowReadme(!showReadme)}
-                  className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl transition-all border shrink-0 ${
-                    showReadme 
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' 
-                      : theme === 'dark' ? 'text-zinc-400 border-zinc-800 hover:text-white bg-zinc-900/50' : 'text-zinc-500 border-zinc-200 hover:text-zinc-900 bg-white shadow-sm'
-                  }`}
-                >
-                  {showReadme ? 'AI Summary' : 'README'}
-                </button>
+              <div className={`flex items-center gap-2 sm:gap-3 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                <Code size={16} className="sm:size-[18px]" />
+                <h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Project Documentation</h4>
               </div>
 
               <div className={`rounded-[2rem] sm:rounded-[3rem] border shadow-sm min-h-[400px] sm:min-h-[600px] overflow-hidden ${
@@ -749,38 +732,20 @@ export default function Dashboard() {
                   ? 'bg-zinc-900/10 border-zinc-900' 
                   : 'bg-zinc-50/20 border-zinc-100'
               }`}>
-                {!showReadme ? (
-                  <div className="p-6 sm:p-10 md:p-16 space-y-6 sm:space-y-8">
-                    <div className={`inline-block px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
-                      AI Market Intelligence
+                <div className={`prose prose-sm sm:prose-base lg:prose-lg max-w-none p-6 sm:p-10 md:p-16 ${
+                  theme === 'dark' ? 'prose-invert' : ''
+                }`}>
+                  {readmeLoading ? (
+                    <div className="flex flex-col items-center justify-center py-24 sm:py-48 gap-6 sm:gap-8">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-zinc-800 border-t-blue-500 rounded-full animate-spin"></div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 animate-pulse text-center">Scanning Documentation...</p>
                     </div>
-                    <div className={`prose prose-sm sm:prose-base lg:prose-lg max-w-none ${theme === 'dark' ? 'prose-invert' : ''}`}>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {(selectedRepo as any).market_summary || 'Market analysis is currently being generated. Please trigger a manual sync to populate this data.'}
-                      </ReactMarkdown>
-                    </div>
-                    <div className="pt-6 sm:pt-8 border-t border-zinc-100 dark:border-zinc-900">
-                      <p className={`text-[8px] sm:text-[10px] ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'} uppercase font-black tracking-widest`}>
-                        Generated by GPT-OSS 120B • Comprehensive Analysis
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`prose prose-sm sm:prose-base lg:prose-lg max-w-none p-6 sm:p-10 md:p-16 ${
-                    theme === 'dark' ? 'prose-invert' : ''
-                  }`}>
-                    {readmeLoading ? (
-                      <div className="flex flex-col items-center justify-center py-24 sm:py-48 gap-6 sm:gap-8">
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-zinc-800 border-t-blue-500 rounded-full animate-spin"></div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-500 animate-pulse text-center">Scanning Documentation...</p>
-                      </div>
-                    ) : (
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {readme || ''}
-                      </ReactMarkdown>
-                    )}
-                  </div>
-                )}
+                  ) : (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {readme || 'No documentation found for this project.'}
+                    </ReactMarkdown>
+                  )}
+                </div>
               </div>
             </div>
           </div>
