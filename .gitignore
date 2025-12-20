@@ -44,6 +44,12 @@ temp-results.json
 reports/
 
 # Next.js / Frontend
+.next/
+out/
+node_modules/
+.env.local
+.env.production.local
+.env.development.local
 frontend/.next/
 frontend/out/
 frontend/node_modules/
