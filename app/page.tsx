@@ -71,15 +71,15 @@ interface DashboardData {
 }
 
 const SECTORS = [
-  { id: 'all', label: 'All Repos', icon: '🌐', keywords: [] },
-  { id: 'ai', label: 'AI & ML', icon: '🤖', keywords: ['ai', 'llm', 'machine-learning', 'deep-learning', 'neural', 'gpt', 'agent'] },
-  { id: 'finance', label: 'FinTech', icon: '💰', keywords: ['fintech', 'crypto', 'blockchain', 'defi', 'trading', 'payment'] },
-  { id: 'web3', label: 'Blockchain', icon: '⛓️', keywords: ['web3', 'ethereum', 'solidity', 'nft', 'dao', 'smart-contract'] },
-  { id: 'devtools', label: 'Developer Tools', icon: '🛠️', keywords: ['developer', 'devops', 'ci-cd', 'testing', 'deployment', 'docker'] },
-  { id: 'health', label: 'HealthTech', icon: '🏥', keywords: ['health', 'medical', 'healthcare', 'biotech', 'fitness', 'wellness'] },
-  { id: 'security', label: 'Security', icon: '🔒', keywords: ['security', 'cybersecurity', 'encryption', 'auth', 'privacy'] },
-  { id: 'data', label: 'Data & Analytics', icon: '📊', keywords: ['data', 'analytics', 'visualization', 'database', 'etl', 'pipeline'] },
-  { id: 'mobile', label: 'Mobile', icon: '📱', keywords: ['mobile', 'ios', 'android', 'react-native', 'flutter'] },
+  { id: 'all', name: 'All Sectors', icon: Layers, keywords: [] },
+  { id: 'ai', name: 'AI & ML', icon: Activity, keywords: ['ai', 'llm', 'machine-learning', 'deep-learning', 'neural', 'gpt', 'agent'] },
+  { id: 'finance', name: 'FinTech', icon: TrendingUp, keywords: ['fintech', 'crypto', 'blockchain', 'defi', 'trading', 'payment'] },
+  { id: 'health', name: 'HealthTech', icon: Activity, keywords: ['health', 'medical', 'healthcare', 'biotech', 'fitness', 'wellness'] },
+  { id: 'devtools', name: 'DevTools', icon: Code, keywords: ['developer', 'devops', 'ci-cd', 'testing', 'deployment', 'docker'] },
+  { id: 'security', name: 'Security', icon: Zap, keywords: ['security', 'cybersecurity', 'encryption', 'auth', 'privacy'] },
+  { id: 'web3', name: 'Web3', icon: Zap, keywords: ['web3', 'ethereum', 'solidity', 'nft', 'dao', 'smart-contract'] },
+  { id: 'data', name: 'Data', icon: Layers, keywords: ['data', 'analytics', 'visualization', 'database', 'etl', 'pipeline'] },
+  { id: 'mobile', name: 'Mobile', icon: Layers, keywords: ['mobile', 'ios', 'android', 'react-native', 'flutter'] },
 ];
 
 export default function Dashboard() {
@@ -805,8 +805,8 @@ export default function Dashboard() {
                       }`}
                     >
                       <div className="flex items-center gap-2 sm:gap-3">
-                        <span className="text-sm sm:text-base">{sector.icon}</span>
-                        <span className="whitespace-nowrap">{sector.label}</span>
+                        <sector.icon size={14} className="sm:size-4" />
+                        <span className="whitespace-nowrap">{sector.name}</span>
                       </div>
                       <span className={`text-[9px] sm:text-[10px] tabular-nums ml-2 ${
                         selectedSector === sector.id 
