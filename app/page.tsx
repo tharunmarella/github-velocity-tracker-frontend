@@ -870,19 +870,6 @@ export default function Dashboard() {
                   <h3 className={`text-xs sm:text-sm font-black uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                     {isSearchingSemantic ? `Results for: "${semanticQuery}"` : 'Trending Repositories'}
                   </h3>
-                  <div className="relative group/tooltip inline-block">
-                    <div className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mt-1 cursor-help flex items-center gap-1 ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                    {isSearchingSemantic ? 'Semantic Vector Match' : 'Sorted by Intent Score'}
-                      {!isSearchingSemantic && <Info size={10} />}
-                    </div>
-                    {!isSearchingSemantic && (
-                      <div className={`absolute left-0 bottom-full mb-2 hidden group-hover/tooltip:block z-[60] p-3 rounded-xl border shadow-xl font-mono text-[9px] whitespace-nowrap animate-in fade-in slide-in-from-bottom-1 duration-200 ${
-                        theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-blue-400' : 'bg-white border-zinc-100 text-blue-600'
-                      }`}>
-                        (Stars/D × 1.0) + (Forks/D × 2.5) + (Issues × 0.1)
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 <div className={`flex items-center p-1 rounded-xl border self-start sm:self-auto ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}`}>
