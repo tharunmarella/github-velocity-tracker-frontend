@@ -464,11 +464,31 @@ export default function Dashboard() {
   if (!data || !Array.isArray(data.repos)) return null;
 
   // For semantic search, we just display the results as-is
-  // For regular browsing, backend handles all filtering (sector, tag, time_horizon, sort)
+  // For regular browsing, we filter on the frontend as well to ensure responsiveness
   const displayedRepos = data.repos.filter(repo => {
     if (!repo) return false;
     // Hide low-relevancy noise identified by AI
     if ((repo as any).relevancy_score === 0) return false;
+    
+    // Sector filtering (frontend-side refinement)
+    if (!isSearchingSemantic && selectedSector !== 'all') {
+      const sectorObj = SECTORS.find(s => s.id === selectedSector);
+      if (sectorObj && sectorObj.keywords.length > 0) {
+        const text = `${repo.name || ''} ${repo.description || ''} ${(repo.topics || []).join(' ')}`.toLowerCase();
+        const matchesKeywords = sectorObj.keywords.some(kw => text.includes(kw.toLowerCase()));
+        if (!matchesKeywords) return false;
+      }
+    }
+
+    // Tag filtering (frontend-side refinement)
+    if (selectedTag) {
+      const tags = [
+        ...(Array.isArray(repo.topics) ? repo.topics : []),
+        ...(Array.isArray((repo as any).market_tags) ? (repo as any).market_tags : [])
+      ];
+      if (!tags.some(t => t.toLowerCase() === selectedTag.toLowerCase())) return false;
+    }
+
     return true;
   });
 
