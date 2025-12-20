@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Version: 2.0 - Magic UI Components Enabled
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -1081,7 +1082,7 @@ export default function Dashboard() {
               {!hasMore && displayedRepos.length > 0 && (
                 <div className="mt-12 text-center">
                   <p className={`text-[10px] font-bold uppercase tracking-[0.3em] ${theme === 'dark' ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                    You've reached the edge of the radar
+                    You&apos;ve reached the edge of the radar
                   </p>
                 </div>
               )}

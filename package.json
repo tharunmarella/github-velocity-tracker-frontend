@@ -17,15 +17,15 @@
     "caniuse-lite": "^1.0.30001761",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "framer-motion": "^12.23.26",
+    "framer-motion": "^11.15.0",
     "lucide-react": "^0.562.0",
-    "next": "16.1.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "next": "15.1.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "react-markdown": "^10.1.0",
-    "recharts": "^3.6.0",
+    "recharts": "^2.15.0",
     "remark-gfm": "^4.0.1",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

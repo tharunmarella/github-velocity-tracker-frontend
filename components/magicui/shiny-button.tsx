@@ -4,6 +4,7 @@ import React from "react"
 import { motion, type MotionProps } from "framer-motion"
 import { cn } from "@/lib/utils"
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const animationProps: MotionProps = {
   initial: { "--x": "100%", scale: 0.8 } as any,
   animate: { "--x": "-100%", scale: 1 } as any,
@@ -24,6 +25,7 @@ const animationProps: MotionProps = {
     },
   } as any,
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 interface ShinyButtonProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof MotionProps>,

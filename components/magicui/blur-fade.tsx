@@ -42,7 +42,7 @@ export function BlurFade({
   ...props
 }: BlurFadeProps) {
   const ref = useRef<HTMLDivElement>(null)
-  const inViewResult = useInView(ref as any, { once: true, margin: inViewMargin })
+  const inViewResult = useInView(ref, { once: true, margin: inViewMargin })
   const isInView = !inView || inViewResult
   const defaultVariants: Variants = {
     hidden: {
