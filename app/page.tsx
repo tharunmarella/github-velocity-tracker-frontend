@@ -5,10 +5,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Star, GitFork, Zap, Calendar, Code, 
-  ExternalLink, ArrowUpRight, Github, 
+  ExternalLink, ArrowUpRight, 
   Filter, Search, Layers, Activity, AlertCircle,
   TrendingUp, Sun, Moon, X, Info, MessageSquare,
-  Languages, ArrowLeft, RefreshCw, Database,
+  ArrowLeft, RefreshCw, Database,
   ChevronDown, Flame
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -16,8 +16,6 @@ import remarkGfm from 'remark-gfm';
 
 // Magic UI Components
 import { GridPattern } from '@/components/magicui/grid-pattern';
-import { WordRotate } from '@/components/magicui/word-rotate';
-import { NumberTicker } from '@/components/magicui/number-ticker';
 import { ShinyButton } from '@/components/magicui/shiny-button';
 import { BlurFade } from '@/components/magicui/blur-fade';
 import { cn } from '@/lib/utils';
@@ -103,20 +101,45 @@ export default function Dashboard() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
   const [readme, setReadme] = useState<string | null>(null);
-  const [originalReadme, setOriginalReadme] = useState<string | null>(null);
   const [readmeLoading, setReadmeLoading] = useState(false);
-  const [isTranslating, setIsTranslating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isBackfilling, setIsBackfilling] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [timeHorizon, setTimeHorizon] = useState<number | null>(null); // null = show all repos
   const [semanticQuery, setSemanticQuery] = useState('');
   const [isSearchingSemantic, setIsSearchingSemantic] = useState(false);
-  const [sortBy, setSortBy] = useState<'trend' | 'velocity_7d' | 'velocity_30d' | 'stars' | 'forks'>('trend');
+  const [sortBy, setSortBy] = useState<'trend' | 'velocity_7d' | 'stars' | 'forks'>('trend');
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribeLoading, setSubscribeLoading] = useState(false);
   const [subscribeStatus, setSubscribeStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+  // Pre-calculate sector counts for the sidebar to ensure they update with infinite scroll
+  const sectorCounts = React.useMemo(() => {
+    if (!data || !Array.isArray(data.repos)) return {};
+    
+    const counts: Record<string, number> = {};
+    
+    SECTORS.forEach(sector => {
+      if (sector.id === 'all') {
+        // Use total count from metadata if available (represents entire DB matching current filters)
+        // otherwise fallback to currently loaded list length
+        counts[sector.id] = data.metadata?.count || data.repos.length;
+      } else {
+        // For other sectors, if it's the currently selected sector, use metadata count for accuracy
+        if (selectedSector === sector.id && data.metadata?.count) {
+          counts[sector.id] = data.metadata.count;
+        } else {
+          // Calculate from loaded repos using keywords
+          counts[sector.id] = data.repos.filter(repo => {
+            if (!repo) return false;
+            const text = `${repo.name || ''} ${repo.description || ''} ${(repo.topics || []).join(' ')}`.toLowerCase();
+            return sector.keywords.some(kw => text.includes(kw.toLowerCase()));
+          }).length;
+        }
+      }
+    });
+    
+    return counts;
+  }, [data, selectedSector]);
 
   const fetchTrackerData = useCallback(async (targetPage = 1) => {
     if (targetPage === 1) {
@@ -138,7 +161,6 @@ export default function Dashboard() {
         _t: Date.now().toString() // Cache breaker
       });
       if (selectedSector !== 'all') params.append('sector', selectedSector);
-      if (timeHorizon) params.append('time_horizon', timeHorizon.toString());
       if (selectedTag) params.append('tag', selectedTag);
       
       const res = await fetch(`${API_URL}/api/repos?${params.toString()}`, {
@@ -168,7 +190,8 @@ export default function Dashboard() {
           return {
             ...prev,
             repos: [...prev.repos, ...jsonData.repos],
-            metadata: jsonData.metadata
+            metadata: jsonData.metadata,
+            analysis: jsonData.analysis || prev.analysis
           };
         });
       }
@@ -193,20 +216,17 @@ export default function Dashboard() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [sortBy, selectedSector, timeHorizon, selectedTag]); // All active filters as dependencies
+  }, [sortBy, selectedSector, selectedTag]); // All active filters as dependencies
 
   useEffect(() => {
     if (selectedRepo) {
       setReadmeLoading(true);
       setReadme(null);
-      setOriginalReadme(null);
-      setIsTranslating(false);
       fetch(`${API_URL}/api/readme?fullName=${selectedRepo.full_name}`)
       .then(res => res.json())
       .then(data => {
           const content = data.markdown || 'Could not load README.';
           setReadme(content);
-          setOriginalReadme(content);
           setReadmeLoading(false);
       })
       .catch(err => {
@@ -217,35 +237,6 @@ export default function Dashboard() {
     }
   }, [selectedRepo]);
 
-  const handleTranslate = async () => {
-    if (!readme || isTranslating) return;
-    
-    setIsTranslating(true);
-    try {
-      const res = await fetch(`${API_URL}/api/translate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: readme })
-      });
-      
-      const data = await res.json();
-      if (data.translatedText) {
-        setReadme(data.translatedText);
-      } else {
-        throw new Error('Translation failed');
-      }
-    } catch (err) {
-      console.error('Translation error:', err);
-      alert('Translation failed. Please try again later.');
-    } finally {
-      setIsTranslating(false);
-    }
-  };
-
-  const resetTranslation = () => {
-    setReadme(originalReadme);
-    setIsTranslating(false);
-  };
 
   const handleForceUpdate = async () => {
     if (isUpdating) return;
@@ -284,121 +275,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleForceBackfill = async () => {
-    if (isBackfilling) return;
-    
-    const confirmBackfill = confirm("⚠️ This will start a 1-year deep scan covering all sectors.\n\n⏱️ Estimated time: 5-10 minutes\n💰 This will use GitHub API quota and Groq credits\n\nProceed?");
-    if (!confirmBackfill) return;
-
-    setIsBackfilling(true);
-    setError(null);
-    
-    try {
-      const res = await fetch(`${API_URL}/api/backfill`, { 
-        method: 'POST',
-        signal: AbortSignal.timeout(600000) // 10 minute timeout
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        alert(`✅ ${data.message}\n\nThe backfill is running in the background. Check back in 5-10 minutes.`);
-        // Automatically refresh after 5 minutes
-        setTimeout(() => {
-          fetchTrackerData(1);
-          setIsBackfilling(false);
-        }, 300000);
-      } else {
-        throw new Error(data.error || 'Failed to trigger backfill');
-      }
-    } catch (err: any) {
-      console.error('Backfill error:', err);
-      const errorMsg = err.name === 'TimeoutError'
-        ? 'Backfill request timed out. It may still be running on the server.'
-        : 'Failed to start backfill. Check server logs.';
-      alert(`❌ ${errorMsg}`);
-      setIsBackfilling(false);
-      setError(errorMsg);
-    }
-  };
-
-  const handleSemanticSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!semanticQuery.trim()) return;
-
-    setLoading(true);
-    setIsSearchingSemantic(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `${API_URL}/api/search/semantic?q=${encodeURIComponent(semanticQuery)}`,
-        { signal: AbortSignal.timeout(30000) }
-      );
-      
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errData.error || 'Semantic search failed');
-      }
-      
-      const jsonData = await res.json();
-      
-      if (!jsonData.repos || !Array.isArray(jsonData.repos)) {
-        throw new Error('Invalid response from semantic search');
-      }
-      
-      // Calculate real analytics for semantic results
-      const repos = jsonData.repos;
-      const avgVel7d = repos.length > 0 
-        ? repos.reduce((sum: number, r: any) => sum + (r.velocity_metrics?.velocity_7d || 0), 0) / repos.length 
-        : 0;
-      const avgVel30d = repos.length > 0
-        ? repos.reduce((sum: number, r: any) => sum + (r.velocity_metrics?.velocity_30d || 0), 0) / repos.length
-        : 0;
-      
-      // Count trends
-      const trends: { [key: string]: number } = {};
-      repos.forEach((r: any) => {
-        const trend = r.velocity_metrics?.trend || 'unknown';
-        trends[trend] = (trends[trend] || 0) + 1;
-      });
-      
-      // We wrap the semantic results in a structure that matches DashboardData
-      setData({
-        sector: 'semantic-search',
-        timestamp: new Date().toISOString(),
-        repos: repos,
-        analysis: {
-          total_repos: repos.length,
-          avg_velocity_7d: avgVel7d,
-          avg_velocity_30d: avgVel30d,
-          trends: trends,
-          viral_count: trends['viral'] || 0,
-          accelerating_count: trends['accelerating'] || 0
-        },
-        metadata: {
-          search_date: new Date().toISOString(),
-          days_back: 0,
-          min_stars: 0,
-          count: repos.length
-        }
-      });
-    } catch (err: any) {
-      console.error('Semantic search error:', err);
-      let errorMessage = 'Semantic search is currently unavailable.';
-      
-      if (err.name === 'AbortError' || err.name === 'TimeoutError') {
-        errorMessage = 'Search timed out. Please try again.';
-      } else if (err.message.includes('Weaviate')) {
-        errorMessage = 'Semantic search database is not running. Ensure Weaviate is configured.';
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      setError(errorMessage);
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -432,7 +308,7 @@ export default function Dashboard() {
   useEffect(() => {
     // Fetch data whenever filters change
     fetchTrackerData(1);
-  }, [selectedSector, sortBy, timeHorizon, selectedTag, fetchTrackerData]);
+  }, [selectedSector, sortBy, selectedTag, fetchTrackerData]);
 
   if (loading && !data) {
     return (
@@ -500,18 +376,6 @@ export default function Dashboard() {
     return true;
   });
 
-  const getSectorCount = (sectorId: string, keywords: string[]) => {
-    if (!data || !Array.isArray(data.repos)) return 0;
-    
-    // Count repos matching this sector
-    if (sectorId === 'all') return data.repos.length;
-    
-    return data.repos.filter(repo => {
-      if (!repo) return false;
-      const text = `${repo.name || ''} ${repo.description || ''} ${(repo.topics || []).join(' ')}`.toLowerCase();
-      return keywords.some(kw => text.includes(kw.toLowerCase()));
-    }).length;
-  };
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'} selection:bg-blue-500/30 font-sans relative`}>
@@ -659,36 +523,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl border flex flex-col items-center min-w-[100px] sm:min-w-[120px] ${theme === 'dark' ? 'bg-zinc-900/50 border-zinc-800' : 'bg-blue-50/50 border-blue-100'}`}>
-                <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest mb-0.5 sm:mb-1 ${theme === 'dark' ? 'text-zinc-600' : 'text-blue-400'}`}>7d Velocity</span>
-                <span className="text-xl sm:text-2xl font-black text-blue-500">{selectedRepo.velocity_metrics?.velocity_7d?.toFixed(1) || '0.0'}<span className="text-xs ml-1">★/d</span></span>
-        </div>
-              <div className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl border flex flex-col items-center min-w-[100px] sm:min-w-[120px] ${
-                selectedRepo.velocity_metrics?.trend === 'viral' ? 'bg-red-50 border-red-200' :
-                selectedRepo.velocity_metrics?.trend === 'accelerating' ? 'bg-green-50 border-green-200' :
-                theme === 'dark' ? 'bg-zinc-900/50 border-zinc-800' : 'bg-zinc-50/50 border-zinc-100'
-              }`}>
-                <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest mb-0.5 sm:mb-1 ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`}>Trend</span>
-                <span className="text-xl sm:text-2xl font-black capitalize">
-                  {selectedRepo.velocity_metrics?.trend === 'viral' && '🔥'}
-                  {selectedRepo.velocity_metrics?.trend === 'accelerating' && '🚀'}
-                  {selectedRepo.velocity_metrics?.trend === 'steady' && '📊'}
-                  {selectedRepo.velocity_metrics?.trend === 'decelerating' && '📉'}
-                  {selectedRepo.velocity_metrics?.trend === 'new' && '✨'}
-                  {selectedRepo.velocity_metrics?.trend === 'cooling' && '❄️'}
-                </span>
-        </div>
-              <a 
-                href={selectedRepo.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center gap-2"
-              >
-                <Github size={14} className="sm:size-4" />
-                View Source
-              </a>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-16">
@@ -779,21 +613,13 @@ export default function Dashboard() {
             <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 ${theme === 'dark' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
               GitHub Trend Radar
             </div>
-            <div className="flex flex-col sm:flex-row items-baseline gap-x-4">
-              <h1 className={`text-4xl sm:text-7xl font-black tracking-tighter mb-2 leading-[1.1] ${
-                theme === 'dark' 
-                  ? 'bg-gradient-to-br from-white via-zinc-200 to-zinc-600 bg-clip-text text-transparent' 
-                  : 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-blue-600 bg-clip-text text-transparent'
-              }`}>
-                Spot the next
-              </h1>
-              <WordRotate 
-                words={["big thing.", "viral repo.", "trend shift.", "unicorn."]}
-                className={`text-4xl sm:text-7xl font-black tracking-tighter mb-6 leading-[1.1] ${
-                  theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
-                }`}
-              />
-            </div>
+            <h1 className={`text-2xl sm:text-5xl font-black tracking-tighter mb-8 leading-[1.1] ${
+              theme === 'dark' 
+                ? 'bg-gradient-to-br from-white via-zinc-200 to-zinc-600 bg-clip-text text-transparent' 
+                : 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-blue-600 bg-clip-text text-transparent'
+            }`}>
+              Spot the next <span className={theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}>trend shift.</span>
+            </h1>
             <p className={`${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'} text-lg sm:text-xl max-w-2xl font-medium leading-relaxed`}>
               Tracking the fastest-growing open source projects and decoding developer intent in real-time.
             </p>
@@ -829,7 +655,7 @@ export default function Dashboard() {
                           ? (theme === 'dark' ? 'text-blue-400' : 'text-blue-100')
                           : (theme === 'dark' ? 'text-zinc-700' : 'text-zinc-300')
                       }`}>
-                        {getSectorCount(sector.id, sector.keywords)}
+                        {sectorCounts[sector.id] || 0}
                       </span>
                     </button>
                   ))}
@@ -888,26 +714,6 @@ export default function Dashboard() {
                   </h3>
                 </div>
 
-                <div className={`flex items-center p-1 rounded-xl border self-start sm:self-auto ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-50 border-zinc-100'}`}>
-                  {[
-                    { label: 'ALL', value: null },
-                    { label: '30D', value: 30 },
-                    { label: '6M', value: 180 },
-                    { label: '1Y', value: 365 },
-                  ].map((window) => (
-                    <button
-                      key={window.value || 'all'}
-                      onClick={() => setTimeHorizon(window.value)}
-                      className={`px-3 sm:px-4 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-black tracking-widest transition-all ${
-                        timeHorizon === window.value
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : theme === 'dark' ? 'text-zinc-600 hover:text-white' : 'text-zinc-400 hover:text-zinc-900'
-                      }`}
-                    >
-                      {window.label}
-                    </button>
-                  ))}
-            </div>
           </div>
 
               {/* Sort By - Modern Segmented Control */}
@@ -921,7 +727,6 @@ export default function Dashboard() {
                   {[
                     { id: 'trend', label: 'Trending', icon: Flame },
                     { id: 'velocity_7d', label: '7D Growth', icon: Zap },
-                    { id: 'velocity_30d', label: '30D Growth', icon: Activity },
                     { id: 'stars', label: 'Top Stars', icon: Star },
                     { id: 'forks', label: 'Most Forked', icon: GitFork },
                   ].map((option) => (
@@ -977,7 +782,7 @@ export default function Dashboard() {
                         <div className="flex items-center gap-1.5">
                           <TrendingUp size={14} className="text-blue-500 sm:size-4" />
                           <span className={`text-xl sm:text-3xl font-black tabular-nums tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-                            <NumberTicker value={repo.velocity_metrics?.velocity_7d || 0} decimalPlaces={1} />
+                            {(repo.velocity_metrics?.velocity_7d || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
                           </span>
                         </div>
                         <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`}>★/day (7d)</span>
@@ -1028,11 +833,11 @@ export default function Dashboard() {
                       <div className="mt-auto flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4">
                         <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                           <Star size={12} className="text-yellow-500 sm:size-3.5" />
-                          <NumberTicker value={repo.stars || 0} /> <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">stars</span>
+                          {(repo.stars || 0).toLocaleString()} <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">stars</span>
                         </div>
                         <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                           <GitFork size={12} className={`sm:size-3.5 ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`} />
-                          <NumberTicker value={repo.forks || 0} /> <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">forks</span>
+                          {(repo.forks || 0).toLocaleString()} <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">forks</span>
                         </div>
                         <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                           <div className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-blue-500 ${theme === 'dark' ? 'shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''}`}></div>
