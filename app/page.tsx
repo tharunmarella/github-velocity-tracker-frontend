@@ -550,6 +550,7 @@ export default function Dashboard() {
           */}
 
           <div className="flex items-center gap-1 sm:gap-2 md:gap-4 shrink-0">
+            {/* Admin Tools - Commented out for production
             <button 
               onClick={handleForceBackfill}
               disabled={isBackfilling}
@@ -574,6 +575,7 @@ export default function Dashboard() {
             >
               <RefreshCw size={18} />
             </button>
+            */}
             
             <button 
               onClick={() => setIsSubscribeModalOpen(true)}
