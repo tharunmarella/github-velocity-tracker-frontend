@@ -1,4 +1,5 @@
 'use client';
+// Version: 2.0 - Magic UI Components Enabled
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
