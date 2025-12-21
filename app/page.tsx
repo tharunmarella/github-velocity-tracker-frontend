@@ -111,35 +111,6 @@ export default function Dashboard() {
   const [subscribeLoading, setSubscribeLoading] = useState(false);
   const [subscribeStatus, setSubscribeStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  // Pre-calculate sector counts for the sidebar to ensure they update with infinite scroll
-  const sectorCounts = React.useMemo(() => {
-    if (!data || !Array.isArray(data.repos)) return {};
-    
-    const counts: Record<string, number> = {};
-    
-    SECTORS.forEach(sector => {
-      if (sector.id === 'all') {
-        // Use total count from metadata if available (represents entire DB matching current filters)
-        // otherwise fallback to currently loaded list length
-        counts[sector.id] = data.metadata?.count || data.repos.length;
-      } else {
-        // For other sectors, if it's the currently selected sector, use metadata count for accuracy
-        if (selectedSector === sector.id && data.metadata?.count) {
-          counts[sector.id] = data.metadata.count;
-        } else {
-          // Calculate from loaded repos using keywords
-          counts[sector.id] = data.repos.filter(repo => {
-            if (!repo) return false;
-            const text = `${repo.name || ''} ${repo.description || ''} ${(repo.topics || []).join(' ')}`.toLowerCase();
-            return sector.keywords.some(kw => text.includes(kw.toLowerCase()));
-          }).length;
-        }
-      }
-    });
-    
-    return counts;
-  }, [data, selectedSector]);
-
   const fetchTrackerData = useCallback(async (targetPage = 1) => {
     if (targetPage === 1) {
     setLoading(true);
@@ -613,13 +584,6 @@ export default function Dashboard() {
                         <sector.icon size={14} className="sm:size-4" />
                         <span className="whitespace-nowrap">{sector.name}</span>
                       </div>
-                      <span className={`text-[9px] sm:text-[10px] tabular-nums ml-2 ${
-                        selectedSector === sector.id 
-                          ? (theme === 'dark' ? 'text-blue-400' : 'text-blue-100')
-                          : (theme === 'dark' ? 'text-zinc-700' : 'text-zinc-300')
-                      }`}>
-                        {sectorCounts[sector.id] || 0}
-                      </span>
                     </button>
                   ))}
                 </div>
