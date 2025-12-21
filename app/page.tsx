@@ -112,6 +112,12 @@ export default function Dashboard() {
   const [subscribeStatus, setSubscribeStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   const fetchTrackerData = useCallback(async (targetPage = 1) => {
+    // If we are currently showing semantic search results, we don't want 
+    // to auto-fetch the default list when a filter changes unless we are clearing the search.
+    if (isSearchingSemantic && targetPage === 1 && !error) {
+      return;
+    }
+
     if (targetPage === 1) {
     setLoading(true);
       setPage(1);
@@ -315,13 +321,13 @@ export default function Dashboard() {
 
   // For semantic search, we just display the results as-is
   // For regular browsing, we filter on the frontend as well to ensure responsiveness
-  const displayedRepos = data.repos.filter(repo => {
+  const filteredRepos = data.repos.filter(repo => {
     if (!repo) return false;
     // Hide low-relevancy noise identified by AI
     if ((repo as any).relevancy_score === 0) return false;
     
     // Sector filtering (frontend-side refinement)
-    if (!isSearchingSemantic && selectedSector !== 'all') {
+    if (selectedSector !== 'all') {
       const sectorObj = SECTORS.find(s => s.id === selectedSector);
       if (sectorObj && sectorObj.keywords.length > 0) {
         const text = `${repo.name || ''} ${repo.description || ''} ${(repo.topics || []).join(' ')}`.toLowerCase();
@@ -341,6 +347,15 @@ export default function Dashboard() {
 
     return true;
   });
+
+  // Apply sorting strategy
+  const displayedRepos = isSearchingSemantic ? [...filteredRepos].sort((a, b) => {
+    if (sortBy === 'stars') return (b.stars || 0) - (a.stars || 0);
+    if (sortBy === 'forks') return (b.forks || 0) - (a.forks || 0);
+    if (sortBy === 'velocity_7d') return (b.velocity_metrics?.velocity_7d || 0) - (a.velocity_metrics?.velocity_7d || 0);
+    if (sortBy === 'trend') return (b.velocity_metrics?.intent_score || 0) - (a.velocity_metrics?.intent_score || 0);
+    return 0;
+  }) : filteredRepos;
 
 
   return (
