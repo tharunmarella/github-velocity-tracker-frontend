@@ -111,10 +111,10 @@ export default function Dashboard() {
   const [subscribeLoading, setSubscribeLoading] = useState(false);
   const [subscribeStatus, setSubscribeStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  const fetchTrackerData = useCallback(async (targetPage = 1) => {
+  const fetchTrackerData = useCallback(async (targetPage = 1, forceRefresh = false) => {
     // If we are currently showing semantic search results, we don't want 
     // to auto-fetch the default list when a filter changes unless we are clearing the search.
-    if (isSearchingSemantic && targetPage === 1) {
+    if (isSearchingSemantic && targetPage === 1 && !forceRefresh) {
       return;
     }
 
@@ -359,7 +359,7 @@ export default function Dashboard() {
 
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950 text-zinc-100' : 'bg-white text-zinc-900'} selection:bg-blue-500/30 font-sans relative`}>
+    <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-zinc-950 text-zinc-100' : 'bg-zinc-50 text-zinc-900'} selection:bg-blue-500/30 font-sans relative`}>
       <GridPattern
         width={40}
         height={40}
@@ -367,17 +367,17 @@ export default function Dashboard() {
         y={-1}
         className={cn(
           "[mask-image:radial-gradient(1000px_circle_at_center,white,transparent)]",
-          theme === 'dark' ? 'fill-blue-500/5 stroke-blue-500/10' : 'fill-blue-500/5 stroke-blue-500/5'
+          theme === 'dark' ? 'fill-blue-500/5 stroke-blue-500/10' : 'fill-blue-500/10 stroke-blue-500/5'
         )}
       />
       {/* Navbar */}
-      <nav className={`border-b sticky top-0 z-50 backdrop-blur-xl ${theme === 'dark' ? 'border-zinc-900 bg-zinc-950/50' : 'border-zinc-100 bg-white/80'}`}>
+      <nav className={`border-b sticky top-0 z-50 backdrop-blur-xl ${theme === 'dark' ? 'border-zinc-900 bg-zinc-950/50' : 'border-zinc-200/50 bg-white/80'}`}>
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
-          <div
-            className="flex items-center gap-2 cursor-pointer shrink-0"
+          <div 
+            className="flex items-center gap-2 cursor-pointer shrink-0" 
             onClick={() => {
               setSelectedRepo(null);
-              fetchTrackerData(1);
+              fetchTrackerData(1, true);
             }}
           >
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
@@ -396,13 +396,13 @@ export default function Dashboard() {
                 placeholder="Search projects semantically (e.g. 'nextjs auth' or 'ai agents')"
                 className={`w-full pl-9 sm:pl-11 pr-4 py-2 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-medium transition-all outline-none border ${theme === 'dark'
                   ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 focus:bg-zinc-900/80'
-                  : 'bg-zinc-50 border-zinc-100 text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500/30 focus:bg-white focus:shadow-sm'
+                  : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500/30 focus:bg-white shadow-sm'
                   }`}
               />
               {isSearchingSemantic && (
-                <button
+                <button 
                   type="button"
-                  onClick={() => fetchTrackerData(1)}
+                  onClick={() => fetchTrackerData(1, true)}
                   className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
                 >
                   <X size={12} className="text-zinc-500" />
@@ -502,7 +502,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-16">
             <div className="space-y-8 sm:space-y-12">
-              <div className={`p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-900' : 'bg-zinc-50 border-zinc-100'}`}>
+              <div className={`p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-900' : 'bg-white border-zinc-200 shadow-sm'}`}>
                 <h4 className={`text-[10px] font-black uppercase tracking-[0.4em] mb-6 sm:mb-10 flex items-center gap-3 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                   <Activity size={16} />
                   Momentum Data
@@ -536,7 +536,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className={`p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-900' : 'bg-zinc-50 border-zinc-100'}`}>
+              <div className={`p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-900' : 'bg-white border-zinc-200 shadow-sm'}`}>
                 <h4 className={`text-[10px] font-black uppercase tracking-[0.4em] mb-6 sm:mb-8 flex items-center gap-3 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                   <Layers size={16} />
                   Contextual Tags
@@ -560,7 +560,7 @@ export default function Dashboard() {
 
               <div className={`rounded-[2rem] sm:rounded-[3rem] border shadow-sm min-h-[400px] sm:min-h-[600px] overflow-hidden ${theme === 'dark'
                 ? 'bg-zinc-900/10 border-zinc-900'
-                : 'bg-zinc-50/20 border-zinc-100'
+                : 'bg-white border-zinc-200/60'
                 }`}>
                 <div className={`prose prose-sm sm:prose-base lg:prose-lg max-w-none p-6 sm:p-10 md:p-16 ${theme === 'dark' ? 'prose-invert' : ''
                   }`}>
@@ -598,7 +598,7 @@ export default function Dashboard() {
 
           <div className="flex flex-col lg:flex-row gap-8 sm:gap-12 items-start">
             <div className="w-full lg:w-72 lg:sticky lg:top-24 space-y-6 sm:space-y-8">
-              <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800/50' : 'bg-zinc-50 border-zinc-100'}`}>
+              <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800/50' : 'bg-white border-zinc-200 shadow-sm'}`}>
                 <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 sm:mb-6 flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                   <Filter size={14} />
                   Focus Sector
@@ -613,7 +613,7 @@ export default function Dashboard() {
                       }}
                       className={`flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold transition-all shrink-0 lg:shrink ${selectedSector === sector.id
                         ? (theme === 'dark' ? 'bg-blue-600/10 text-blue-500 border border-blue-500/20 shadow-lg shadow-blue-500/5' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/20')
-                        : (theme === 'dark' ? 'text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300 border border-transparent' : 'text-zinc-500 hover:bg-white hover:text-zinc-900 border border-transparent')
+                        : (theme === 'dark' ? 'text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300 border border-transparent' : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 border border-transparent')
                         }`}
                     >
                       <div className="flex items-center gap-2 sm:gap-3">
@@ -625,7 +625,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800/50' : 'bg-zinc-50 border-zinc-100'}`}>
+              <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800/50' : 'bg-white border-zinc-200 shadow-sm'}`}>
                 <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 sm:mb-6 flex items-center justify-between ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                   <div className="flex items-center gap-2">
                     <Search size={14} />
@@ -657,7 +657,7 @@ export default function Dashboard() {
                         ? 'bg-blue-600 border-blue-600 text-white shadow-md'
                         : theme === 'dark'
                           ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white'
-                          : 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-900'
+                          : 'bg-zinc-50 border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-900'
                         }`}
                     >
                       {tag}
@@ -679,7 +679,7 @@ export default function Dashboard() {
               </div>
 
               {/* Sort By - Modern Segmented Control */}
-              <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800/50' : 'bg-zinc-50 border-zinc-100'}`}>
+              <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800/50' : 'bg-white border-zinc-200 shadow-sm'}`}>
                 <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
                   <TrendingUp size={14} />
                   Sort Strategy
@@ -699,7 +699,7 @@ export default function Dashboard() {
                         ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20 scale-[1.02]'
                         : theme === 'dark'
                           ? 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
-                          : 'bg-white border-zinc-200 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600'
+                          : 'bg-zinc-50 border-zinc-200 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600'
                         }`}
                     >
                       <option.icon size={14} className={sortBy === option.id ? 'text-white' : 'text-current'} />
@@ -726,7 +726,7 @@ export default function Dashboard() {
                       onClick={() => setSelectedRepo(repo)}
                       className={`group border transition-all p-5 sm:p-8 rounded-[2rem] sm:rounded-3xl relative overflow-hidden cursor-pointer ${theme === 'dark'
                         ? 'bg-zinc-900/10 border-zinc-900 hover:border-zinc-800 hover:bg-zinc-900/30'
-                        : 'bg-white border-zinc-100 hover:border-zinc-200 hover:shadow-xl hover:shadow-zinc-200/20'
+                        : 'bg-white border-zinc-200/60 shadow-sm hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-200/30'
                         }`}
                     >
                       <div className="absolute top-0 right-0 p-5 sm:p-8">
@@ -845,7 +845,7 @@ export default function Dashboard() {
         </main>
       )}
 
-      <footer className={`border-t py-16 transition-colors duration-300 ${theme === 'dark' ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-100 bg-zinc-50'}`}>
+      <footer className={`border-t py-16 transition-colors duration-300 ${theme === 'dark' ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200/60 bg-zinc-50/50'}`}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col items-center text-center">
           <div className={`w-12 h-12 border rounded-2xl flex items-center justify-center mb-6 shadow-2xl ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'
             }`}>
@@ -869,7 +869,7 @@ export default function Dashboard() {
       {isSubscribeModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div
-            className={`w-full max-w-md p-8 rounded-[2.5rem] border shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-100'
+            className={`w-full max-w-md p-8 rounded-[2.5rem] border shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200 shadow-xl'
               }`}
           >
             <div className="flex justify-between items-start mb-6">
