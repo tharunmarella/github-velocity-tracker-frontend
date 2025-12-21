@@ -192,7 +192,7 @@ export default function Dashboard() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [sortBy, selectedSector, selectedTag, isSearchingSemantic, error]); // All active filters as dependencies
+  }, [sortBy, selectedSector, selectedTag, isSearchingSemantic]); // All active filters as dependencies
 
   const handleSemanticSearch = async (e: React.FormEvent) => {
     e.preventDefault();
