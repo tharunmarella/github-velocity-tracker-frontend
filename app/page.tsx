@@ -3,12 +3,12 @@
 // Version: 2.0 - Magic UI Components Enabled
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Star, GitFork, Zap, Calendar, Code, 
-  ExternalLink, ArrowUpRight, 
+import {
+  Star, GitFork, Zap, Calendar, Code,
+  ExternalLink, ArrowUpRight,
   Filter, Search, Layers, Activity, AlertCircle,
   TrendingUp, Sun, Moon, X, Info, MessageSquare,
-  ArrowLeft, 
+  ArrowLeft,
   ChevronDown, Flame
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -35,7 +35,7 @@ interface Repository {
   days_old: number;
   open_issues: number;
   topics: string[];
-  
+
   // NEW: Velocity metrics (time-series based)
   velocity_metrics: {
     stars_7d: number;
@@ -114,18 +114,18 @@ export default function Dashboard() {
   const fetchTrackerData = useCallback(async (targetPage = 1) => {
     // If we are currently showing semantic search results, we don't want 
     // to auto-fetch the default list when a filter changes unless we are clearing the search.
-    if (isSearchingSemantic && targetPage === 1 && !error) {
+    if (isSearchingSemantic && targetPage === 1) {
       return;
     }
 
     if (targetPage === 1) {
-    setLoading(true);
+      setLoading(true);
       setPage(1);
       setHasMore(true);
     } else {
       setLoadingMore(true);
     }
-    
+
     setError(null);
     setIsSearchingSemantic(false);
     setSemanticQuery('');
@@ -138,7 +138,7 @@ export default function Dashboard() {
       });
       if (selectedSector !== 'all') params.append('sector', selectedSector);
       if (selectedTag) params.append('tag', selectedTag);
-      
+
       const res = await fetch(`${API_URL}/api/repos?${params.toString()}`, {
         cache: 'no-store', // Disable Next.js data cache
         headers: {
@@ -152,14 +152,14 @@ export default function Dashboard() {
         throw new Error(errData.error || `HTTP ${res.status}: Failed to fetch data`);
       }
       const jsonData = await res.json();
-      
+
       // Validate response structure
       if (!jsonData || !Array.isArray(jsonData.repos)) {
         throw new Error('Invalid response format from server');
       }
-      
+
       if (targetPage === 1) {
-      setData(jsonData);
+        setData(jsonData);
       } else {
         setData(prev => {
           if (!prev) return jsonData;
@@ -177,22 +177,22 @@ export default function Dashboard() {
     } catch (err: any) {
       console.error('Error loading data:', err);
       let errorMessage = 'Failed to connect to tracker';
-      
+
       if (err.name === 'AbortError' || err.name === 'TimeoutError') {
         errorMessage = 'Request timed out. The server might be busy.';
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       if (targetPage === 1) {
-      setError(errorMessage);
-      setData(null);
+        setError(errorMessage);
+        setData(null);
       }
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [sortBy, selectedSector, selectedTag]); // All active filters as dependencies
+  }, [sortBy, selectedSector, selectedTag, isSearchingSemantic, error]); // All active filters as dependencies
 
   const handleSemanticSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,7 +211,7 @@ export default function Dashboard() {
         throw new Error(errData.error || 'Search failed');
       }
       const jsonData = await res.json();
-      
+
       if (!jsonData || !Array.isArray(jsonData.repos)) {
         throw new Error('Invalid response format from server');
       }
@@ -231,13 +231,13 @@ export default function Dashboard() {
       setReadmeLoading(true);
       setReadme(null);
       fetch(`${API_URL}/api/readme?fullName=${selectedRepo.full_name}`)
-      .then(res => res.json())
-      .then(data => {
+        .then(res => res.json())
+        .then(data => {
           const content = data.markdown || 'Could not load README.';
           setReadme(content);
           setReadmeLoading(false);
-      })
-      .catch(err => {
+        })
+        .catch(err => {
           console.error('Error fetching README:', err);
           setReadme('Failed to load README content.');
           setReadmeLoading(false);
@@ -325,7 +325,7 @@ export default function Dashboard() {
     if (!repo) return false;
     // Hide low-relevancy noise identified by AI
     if ((repo as any).relevancy_score === 0) return false;
-    
+
     // Sector filtering (frontend-side refinement)
     if (selectedSector !== 'all') {
       const sectorObj = SECTORS.find(s => s.id === selectedSector);
@@ -373,8 +373,8 @@ export default function Dashboard() {
       {/* Navbar */}
       <nav className={`border-b sticky top-0 z-50 backdrop-blur-xl ${theme === 'dark' ? 'border-zinc-900 bg-zinc-950/50' : 'border-zinc-100 bg-white/80'}`}>
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
-          <div 
-            className="flex items-center gap-2 cursor-pointer shrink-0" 
+          <div
+            className="flex items-center gap-2 cursor-pointer shrink-0"
             onClick={() => {
               setSelectedRepo(null);
               fetchTrackerData(1);
@@ -394,14 +394,13 @@ export default function Dashboard() {
                 value={semanticQuery}
                 onChange={(e) => setSemanticQuery(e.target.value)}
                 placeholder="Search projects semantically (e.g. 'nextjs auth' or 'ai agents')"
-                className={`w-full pl-9 sm:pl-11 pr-4 py-2 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-medium transition-all outline-none border ${
-                  theme === 'dark' 
-                    ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 focus:bg-zinc-900/80' 
-                    : 'bg-zinc-50 border-zinc-100 text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500/30 focus:bg-white focus:shadow-sm'
-                }`}
+                className={`w-full pl-9 sm:pl-11 pr-4 py-2 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-medium transition-all outline-none border ${theme === 'dark'
+                  ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 focus:bg-zinc-900/80'
+                  : 'bg-zinc-50 border-zinc-100 text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500/30 focus:bg-white focus:shadow-sm'
+                  }`}
               />
               {isSearchingSemantic && (
-                <button 
+                <button
                   type="button"
                   onClick={() => fetchTrackerData(1)}
                   className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
@@ -439,20 +438,19 @@ export default function Dashboard() {
               <RefreshCw size={18} />
             </button>
             */}
-            
-            <ShinyButton 
+
+            <ShinyButton
               onClick={() => setIsSubscribeModalOpen(true)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                theme === 'dark' 
-                  ? 'border-blue-500/30' 
-                  : 'border-blue-100 shadow-sm'
-              }`}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${theme === 'dark'
+                ? 'border-blue-500/30'
+                : 'border-blue-100 shadow-sm'
+                }`}
             >
               <span className="hidden sm:inline">Stay Notified</span>
               <span className="sm:hidden">Notify</span>
             </ShinyButton>
 
-            <button 
+            <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className={`p-1.5 sm:p-2 rounded-lg transition-colors ${theme === 'dark' ? 'text-zinc-400 hover:text-white hover:bg-zinc-900' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'}`}
             >
@@ -472,26 +470,24 @@ export default function Dashboard() {
         <main className="max-w-7xl mx-auto px-4 py-6 sm:py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="mb-8 sm:mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-8">
             <div className="flex items-center gap-4 sm:gap-6">
-              <button 
+              <button
                 onClick={() => {
                   setSelectedRepo(null);
                 }}
-                className={`p-3 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all ${
-                  theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700' : 'bg-white border-zinc-100 text-zinc-500 hover:text-zinc-900 hover:border-zinc-200 shadow-sm'
-                }`}
+                className={`p-3 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700' : 'bg-white border-zinc-100 text-zinc-500 hover:text-zinc-900 hover:border-zinc-200 shadow-sm'
+                  }`}
               >
                 <ArrowLeft size={20} className="sm:size-6" />
               </button>
               <div>
                 <div className="flex items-center gap-3 sm:gap-4 mb-1">
                   <h1 className="text-2xl sm:text-4xl font-black tracking-tight">{selectedRepo.name}</h1>
-                  <a 
-                    href={selectedRepo.url} 
-                    target="_blank" 
+                  <a
+                    href={selectedRepo.url}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl border transition-all ${
-                      theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-600 hover:text-white' : 'bg-zinc-50 border-zinc-200 text-zinc-400 hover:text-zinc-900'
-                    }`}
+                    className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl border transition-all ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-600 hover:text-white' : 'bg-zinc-50 border-zinc-200 text-zinc-400 hover:text-zinc-900'
+                      }`}
                   >
                     <ExternalLink size={14} className="sm:size-[18px]" />
                   </a>
@@ -547,9 +543,8 @@ export default function Dashboard() {
                 </h4>
                 <div className="flex flex-wrap gap-2 sm:gap-3">
                   {selectedRepo.topics.map(topic => (
-                    <span key={topic} className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-bold border transition-all lowercase ${
-                      theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700' : 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300 shadow-sm'
-                    }`}>
+                    <span key={topic} className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-bold border transition-all lowercase ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700' : 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300 shadow-sm'
+                      }`}>
                       #{topic}
                     </span>
                   ))}
@@ -563,14 +558,12 @@ export default function Dashboard() {
                 <h4 className="text-[10px] font-black uppercase tracking-[0.4em]">Project Documentation</h4>
               </div>
 
-              <div className={`rounded-[2rem] sm:rounded-[3rem] border shadow-sm min-h-[400px] sm:min-h-[600px] overflow-hidden ${
-                theme === 'dark' 
-                  ? 'bg-zinc-900/10 border-zinc-900' 
-                  : 'bg-zinc-50/20 border-zinc-100'
-              }`}>
-                <div className={`prose prose-sm sm:prose-base lg:prose-lg max-w-none p-6 sm:p-10 md:p-16 ${
-                  theme === 'dark' ? 'prose-invert' : ''
+              <div className={`rounded-[2rem] sm:rounded-[3rem] border shadow-sm min-h-[400px] sm:min-h-[600px] overflow-hidden ${theme === 'dark'
+                ? 'bg-zinc-900/10 border-zinc-900'
+                : 'bg-zinc-50/20 border-zinc-100'
                 }`}>
+                <div className={`prose prose-sm sm:prose-base lg:prose-lg max-w-none p-6 sm:p-10 md:p-16 ${theme === 'dark' ? 'prose-invert' : ''
+                  }`}>
                   {readmeLoading ? (
                     <div className="flex flex-col items-center justify-center py-24 sm:py-48 gap-6 sm:gap-8">
                       <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-zinc-800 border-t-blue-500 rounded-full animate-spin"></div>
@@ -592,17 +585,16 @@ export default function Dashboard() {
             <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 ${theme === 'dark' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
               GitHub Trend Radar
             </div>
-            <h1 className={`text-2xl sm:text-5xl font-black tracking-tighter mb-8 leading-[1.1] ${
-              theme === 'dark' 
-                ? 'bg-gradient-to-br from-white via-zinc-200 to-zinc-600 bg-clip-text text-transparent' 
-                : 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-blue-600 bg-clip-text text-transparent'
-            }`}>
+            <h1 className={`text-2xl sm:text-5xl font-black tracking-tighter mb-8 leading-[1.1] ${theme === 'dark'
+              ? 'bg-gradient-to-br from-white via-zinc-200 to-zinc-600 bg-clip-text text-transparent'
+              : 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-blue-600 bg-clip-text text-transparent'
+              }`}>
               Spot the next <span className={theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}>trend shift.</span>
             </h1>
             <p className={`${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'} text-lg sm:text-xl max-w-2xl font-medium leading-relaxed`}>
               Tracking the fastest-growing open source projects and decoding developer intent in real-time.
             </p>
-        </div>
+          </div>
 
           <div className="flex flex-col lg:flex-row gap-8 sm:gap-12 items-start">
             <div className="w-full lg:w-72 lg:sticky lg:top-24 space-y-6 sm:space-y-8">
@@ -619,11 +611,10 @@ export default function Dashboard() {
                         setSelectedSector(sector.id);
                         setSelectedTag(null);
                       }}
-                      className={`flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold transition-all shrink-0 lg:shrink ${
-                        selectedSector === sector.id 
-                          ? (theme === 'dark' ? 'bg-blue-600/10 text-blue-500 border border-blue-500/20 shadow-lg shadow-blue-500/5' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/20')
-                          : (theme === 'dark' ? 'text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300 border border-transparent' : 'text-zinc-500 hover:bg-white hover:text-zinc-900 border border-transparent')
-                      }`}
+                      className={`flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold transition-all shrink-0 lg:shrink ${selectedSector === sector.id
+                        ? (theme === 'dark' ? 'bg-blue-600/10 text-blue-500 border border-blue-500/20 shadow-lg shadow-blue-500/5' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/20')
+                        : (theme === 'dark' ? 'text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-300 border border-transparent' : 'text-zinc-500 hover:bg-white hover:text-zinc-900 border border-transparent')
+                        }`}
                     >
                       <div className="flex items-center gap-2 sm:gap-3">
                         <sector.icon size={14} className="sm:size-4" />
@@ -641,7 +632,7 @@ export default function Dashboard() {
                     Discovery Tags
                   </div>
                   {selectedTag && (
-                    <button 
+                    <button
                       onClick={() => setSelectedTag(null)}
                       className="text-[8px] font-black text-blue-500 hover:underline cursor-pointer"
                     >
@@ -662,13 +653,12 @@ export default function Dashboard() {
                     <button
                       key={tag}
                       onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-                      className={`px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transition-all border shrink-0 ${
-                        selectedTag === tag
-                          ? 'bg-blue-600 border-blue-600 text-white shadow-md'
-                          : theme === 'dark' 
-                            ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white' 
-                            : 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-900'
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transition-all border shrink-0 ${selectedTag === tag
+                        ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                        : theme === 'dark'
+                          ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white'
+                          : 'bg-white border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-900'
+                        }`}
                     >
                       {tag}
                     </button>
@@ -676,7 +666,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              </div>
+            </div>
 
             <div className="flex-1 space-y-4 w-full">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between px-2 mb-4 sm:mb-6 gap-4">
@@ -686,7 +676,7 @@ export default function Dashboard() {
                   </h3>
                 </div>
 
-          </div>
+              </div>
 
               {/* Sort By - Modern Segmented Control */}
               <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/20 border-zinc-800/50' : 'bg-zinc-50 border-zinc-100'}`}>
@@ -694,7 +684,7 @@ export default function Dashboard() {
                   <TrendingUp size={14} />
                   Sort Strategy
                 </h4>
-                
+
                 <div className="flex flex-wrap gap-2">
                   {[
                     { id: 'trend', label: 'Trending', icon: Flame },
@@ -705,13 +695,12 @@ export default function Dashboard() {
                     <button
                       key={option.id}
                       onClick={() => setSortBy(option.id as any)}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border ${
-                        sortBy === option.id
-                          ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20 scale-[1.02]'
-                          : theme === 'dark'
-                            ? 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
-                            : 'bg-white border-zinc-200 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600'
-                      }`}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border ${sortBy === option.id
+                        ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20 scale-[1.02]'
+                        : theme === 'dark'
+                          ? 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
+                          : 'bg-white border-zinc-200 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600'
+                        }`}
                     >
                       <option.icon size={14} className={sortBy === option.id ? 'text-white' : 'text-current'} />
                       {option.label}
@@ -732,89 +721,86 @@ export default function Dashboard() {
                 </div>
               ) : (
                 displayedRepos.map((repo, idx) => (
-                <BlurFade key={repo.full_name} delay={idx * 0.05} inView>
-                  <div 
-                    onClick={() => setSelectedRepo(repo)}
-                    className={`group border transition-all p-5 sm:p-8 rounded-[2rem] sm:rounded-3xl relative overflow-hidden cursor-pointer ${
-                      theme === 'dark' 
-                        ? 'bg-zinc-900/10 border-zinc-900 hover:border-zinc-800 hover:bg-zinc-900/30' 
+                  <BlurFade key={repo.full_name} delay={idx * 0.05} inView>
+                    <div
+                      onClick={() => setSelectedRepo(repo)}
+                      className={`group border transition-all p-5 sm:p-8 rounded-[2rem] sm:rounded-3xl relative overflow-hidden cursor-pointer ${theme === 'dark'
+                        ? 'bg-zinc-900/10 border-zinc-900 hover:border-zinc-800 hover:bg-zinc-900/30'
                         : 'bg-white border-zinc-100 hover:border-zinc-200 hover:shadow-xl hover:shadow-zinc-200/20'
-                    }`}
-                  >
-                    <div className="absolute top-0 right-0 p-5 sm:p-8">
-                      <div className="flex flex-col items-end gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <TrendingUp size={14} className="text-blue-500 sm:size-4" />
-                          <span className={`text-xl sm:text-3xl font-black tabular-nums tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
-                            {(repo.velocity_metrics?.velocity_7d || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-                          </span>
-                        </div>
-                        <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`}>★/day (7d)</span>
-                        
-                        {/* Trend Badge */}
-                        {repo.velocity_metrics?.trend && (
-                          <div className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                            repo.velocity_metrics.trend === 'viral' ? 'bg-red-100 text-red-700' :
-                            repo.velocity_metrics.trend === 'accelerating' ? 'bg-green-100 text-green-700' :
-                            repo.velocity_metrics.trend === 'new' ? 'bg-blue-100 text-blue-700' :
-                            'bg-zinc-100 text-zinc-600'
-                          }`}>
-                            {repo.velocity_metrics.trend === 'viral' && '🔥 VIRAL'}
-                            {repo.velocity_metrics.trend === 'accelerating' && '🚀 HOT'}
-                            {repo.velocity_metrics.trend === 'new' && '✨ NEW'}
-                            {repo.velocity_metrics.trend === 'steady' && '📊'}
-                            {repo.velocity_metrics.trend === 'decelerating' && '📉'}
-                            {repo.velocity_metrics.trend === 'cooling' && '❄️'}
+                        }`}
+                    >
+                      <div className="absolute top-0 right-0 p-5 sm:p-8">
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <TrendingUp size={14} className="text-blue-500 sm:size-4" />
+                            <span className={`text-xl sm:text-3xl font-black tabular-nums tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-zinc-900'}`}>
+                              {(repo.velocity_metrics?.velocity_7d || 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    </div>
+                          <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`}>★/day (7d)</span>
 
-                    <div className="flex flex-col h-full lg:max-w-[calc(100%-140px)]">
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
-                        <div className={`px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-black tracking-tighter ${theme === 'dark' ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-50 text-blue-600'}`}>#{idx + 1}</div>
-                        <h2 className={`text-lg sm:text-2xl font-black transition-colors tracking-tight ${theme === 'dark' ? 'group-hover:text-blue-400' : 'group-hover:text-blue-600'}`}>
-                          {repo.name}
-                        </h2>
-                        <a 
-                          href={repo.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className={`p-1 sm:p-1.5 rounded-lg border transition-all ${
-                            theme === 'dark' 
-                              ? 'bg-zinc-950 border-zinc-800 text-zinc-600 hover:text-white hover:border-zinc-700' 
+                          {/* Trend Badge */}
+                          {repo.velocity_metrics?.trend && (
+                            <div className={`px-2 py-1 rounded-full text-[10px] font-bold ${repo.velocity_metrics.trend === 'viral' ? 'bg-red-100 text-red-700' :
+                              repo.velocity_metrics.trend === 'accelerating' ? 'bg-green-100 text-green-700' :
+                                repo.velocity_metrics.trend === 'new' ? 'bg-blue-100 text-blue-700' :
+                                  'bg-zinc-100 text-zinc-600'
+                              }`}>
+                              {repo.velocity_metrics.trend === 'viral' && '🔥 VIRAL'}
+                              {repo.velocity_metrics.trend === 'accelerating' && '🚀 HOT'}
+                              {repo.velocity_metrics.trend === 'new' && '✨ NEW'}
+                              {repo.velocity_metrics.trend === 'steady' && '📊'}
+                              {repo.velocity_metrics.trend === 'decelerating' && '📉'}
+                              {repo.velocity_metrics.trend === 'cooling' && '❄️'}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col h-full lg:max-w-[calc(100%-140px)]">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
+                          <div className={`px-1.5 py-0.5 rounded text-[8px] sm:text-[10px] font-black tracking-tighter ${theme === 'dark' ? 'bg-blue-500/10 text-blue-500' : 'bg-blue-50 text-blue-600'}`}>#{idx + 1}</div>
+                          <h2 className={`text-lg sm:text-2xl font-black transition-colors tracking-tight ${theme === 'dark' ? 'group-hover:text-blue-400' : 'group-hover:text-blue-600'}`}>
+                            {repo.name}
+                          </h2>
+                          <a
+                            href={repo.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`p-1 sm:p-1.5 rounded-lg border transition-all ${theme === 'dark'
+                              ? 'bg-zinc-950 border-zinc-800 text-zinc-600 hover:text-white hover:border-zinc-700'
                               : 'bg-zinc-50 border-zinc-200 text-zinc-400 hover:text-zinc-900 hover:border-zinc-300'
-                          }`}
-                        >
-                          <ArrowUpRight size={12} className="sm:size-3.5" />
-                        </a>
-                      </div>
-                      
-                      <p className={`text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed font-medium line-clamp-2 max-w-2xl ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                        {repo.description}
-                      </p>
+                              }`}
+                          >
+                            <ArrowUpRight size={12} className="sm:size-3.5" />
+                          </a>
+                        </div>
 
-                      <div className="mt-auto flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4">
-                        <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                          <Star size={12} className="text-yellow-500 sm:size-3.5" />
-                          {(repo.stars || 0).toLocaleString()} <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">stars</span>
-                        </div>
-                        <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                          <GitFork size={12} className={`sm:size-3.5 ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`} />
-                          {(repo.forks || 0).toLocaleString()} <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">forks</span>
-                        </div>
-                        <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                          <div className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-blue-500 ${theme === 'dark' ? 'shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''}`}></div>
-                          {repo.language}
-                        </div>
-                        <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                          <Calendar size={12} className={`sm:size-3.5 ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`} />
-                          {repo.days_old}d
+                        <p className={`text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed font-medium line-clamp-2 max-w-2xl ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                          {repo.description}
+                        </p>
+
+                        <div className="mt-auto flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-4">
+                          <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                            <Star size={12} className="text-yellow-500 sm:size-3.5" />
+                            {(repo.stars || 0).toLocaleString()} <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">stars</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                            <GitFork size={12} className={`sm:size-3.5 ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`} />
+                            {(repo.forks || 0).toLocaleString()} <span className="hidden sm:inline lowercase text-zinc-700 dark:text-zinc-300">forks</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                            <div className={`w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-blue-500 ${theme === 'dark' ? 'shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''}`}></div>
+                            {repo.language}
+                          </div>
+                          <div className={`flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                            <Calendar size={12} className={`sm:size-3.5 ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`} />
+                            {repo.days_old}d
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </BlurFade>
+                  </BlurFade>
                 ))
               )}
 
@@ -824,11 +810,10 @@ export default function Dashboard() {
                   <button
                     onClick={() => fetchTrackerData(page + 1)}
                     disabled={loadingMore}
-                    className={`px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 ${
-                      theme === 'dark' 
-                        ? 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white' 
-                        : 'bg-zinc-100 border border-zinc-200 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900'
-                    } ${loadingMore ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`px-8 py-4 rounded-[2rem] text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 ${theme === 'dark'
+                      ? 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                      : 'bg-zinc-100 border border-zinc-200 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-900'
+                      } ${loadingMore ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {loadingMore ? (
                       <>
@@ -855,16 +840,15 @@ export default function Dashboard() {
                   </p>
                 </div>
               )}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
       )}
 
       <footer className={`border-t py-16 transition-colors duration-300 ${theme === 'dark' ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-100 bg-zinc-50'}`}>
         <div className="max-w-7xl mx-auto px-4 flex flex-col items-center text-center">
-          <div className={`w-12 h-12 border rounded-2xl flex items-center justify-center mb-6 shadow-2xl ${
-            theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'
-          }`}>
+          <div className={`w-12 h-12 border rounded-2xl flex items-center justify-center mb-6 shadow-2xl ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'
+            }`}>
             <Zap size={24} className={theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'} />
           </div>
           <p className={`text-xs font-black uppercase tracking-[0.3em] mb-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
@@ -884,16 +868,15 @@ export default function Dashboard() {
       {/* Newsletter Modal */}
       {isSubscribeModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div 
-            className={`w-full max-w-md p-8 rounded-[2.5rem] border shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 ${
-              theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-100'
-            }`}
+          <div
+            className={`w-full max-w-md p-8 rounded-[2.5rem] border shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-100'
+              }`}
           >
             <div className="flex justify-between items-start mb-6">
               <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <MessageSquare size={24} className="text-white fill-white" />
               </div>
-              <button 
+              <button
                 onClick={() => {
                   setIsSubscribeModalOpen(false);
                   setSubscribeStatus(null);
@@ -920,33 +903,30 @@ export default function Dashboard() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@email.com"
                   required
-                  className={`w-full px-5 py-4 rounded-2xl text-sm font-bold outline-none transition-all border ${
-                    theme === 'dark' 
-                      ? 'bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-700 focus:border-blue-500/50' 
-                      : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500/30'
-                  }`}
+                  className={`w-full px-5 py-4 rounded-2xl text-sm font-bold outline-none transition-all border ${theme === 'dark'
+                    ? 'bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-700 focus:border-blue-500/50'
+                    : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500/30'
+                    }`}
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={subscribeLoading}
-                className={`w-full py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                  subscribeLoading 
-                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' 
-                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-500/20 active:scale-[0.98]'
-                }`}
+                className={`w-full py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${subscribeLoading
+                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-500/20 active:scale-[0.98]'
+                  }`}
               >
                 {subscribeLoading ? 'Processing...' : 'Secure My Spot'}
               </button>
             </form>
 
             {subscribeStatus && (
-              <div className={`mt-6 p-4 rounded-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${
-                subscribeStatus.type === 'success' 
-                  ? 'bg-green-500/10 border-green-500/20 text-green-500' 
-                  : 'bg-red-500/10 border-red-500/20 text-red-500'
-              }`}>
+              <div className={`mt-6 p-4 rounded-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${subscribeStatus.type === 'success'
+                ? 'bg-green-500/10 border-green-500/20 text-green-500'
+                : 'bg-red-500/10 border-red-500/20 text-red-500'
+                }`}>
                 <Info size={16} />
                 <p className="text-[11px] font-black uppercase tracking-wider">
                   {subscribeStatus.message}
