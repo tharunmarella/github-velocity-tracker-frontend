@@ -188,6 +188,38 @@ export default function Dashboard() {
     }
   }, [sortBy, selectedSector, selectedTag]); // All active filters as dependencies
 
+  const handleSemanticSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!semanticQuery.trim()) return;
+
+    setLoading(true);
+    setIsSearchingSemantic(true);
+    setError(null);
+    setSelectedSector('all');
+    setSelectedTag(null);
+
+    try {
+      const res = await fetch(`${API_URL}/api/search/semantic?q=${encodeURIComponent(semanticQuery.trim())}`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: 'Search failed' }));
+        throw new Error(errData.error || 'Search failed');
+      }
+      const jsonData = await res.json();
+      
+      if (!jsonData || !Array.isArray(jsonData.repos)) {
+        throw new Error('Invalid response format from server');
+      }
+
+      setData(jsonData);
+      setHasMore(false);
+    } catch (err: any) {
+      console.error('Semantic search error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (selectedRepo) {
       setReadmeLoading(true);
@@ -339,7 +371,6 @@ export default function Dashboard() {
             <span className="font-bold text-lg tracking-tight hidden md:inline">Velocity Radar.</span>
           </div>
 
-          {/* Semantic Search Bar - Commented Out
           <div className="flex-1 max-w-xl">
             <form onSubmit={handleSemanticSearch} className="relative group">
               <Search className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 transition-colors ${theme === 'dark' ? 'text-zinc-600 group-focus-within:text-blue-500' : 'text-zinc-300 group-focus-within:text-blue-600'}`} size={14} />
@@ -347,7 +378,7 @@ export default function Dashboard() {
                 type="text"
                 value={semanticQuery}
                 onChange={(e) => setSemanticQuery(e.target.value)}
-                placeholder="Search..."
+                placeholder="Search projects semantically (e.g. 'nextjs auth' or 'ai agents')"
                 className={`w-full pl-9 sm:pl-11 pr-4 py-2 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-medium transition-all outline-none border ${
                   theme === 'dark' 
                     ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 focus:bg-zinc-900/80' 
@@ -365,7 +396,6 @@ export default function Dashboard() {
               )}
             </form>
           </div>
-          */}
 
           <div className="flex items-center gap-1 sm:gap-2 md:gap-4 shrink-0">
             {/* Admin Tools - Commented out for production
