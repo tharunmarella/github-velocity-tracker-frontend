@@ -114,6 +114,7 @@ export default function Dashboard() {
   const fetchTrackerData = useCallback(async (targetPage = 1, forceRefresh = false) => {
     // If we are currently showing semantic search results, we don't want 
     // to auto-fetch the default list when a filter changes unless we are clearing the search.
+    // However, if the sector or tag has changed, we SHOULD fetch.
     if (isSearchingSemantic && targetPage === 1 && !forceRefresh) {
       return;
     }
@@ -319,23 +320,12 @@ export default function Dashboard() {
 
   if (!data || !Array.isArray(data.repos)) return null;
 
-  // For semantic search, we just display the results as-is
   // For regular browsing, we filter on the frontend as well to ensure responsiveness
   const filteredRepos = data.repos.filter(repo => {
     if (!repo) return false;
     // Hide low-relevancy noise identified by AI
     if ((repo as any).relevancy_score === 0) return false;
-
-    // Sector filtering (frontend-side refinement)
-    if (selectedSector !== 'all') {
-      const sectorObj = SECTORS.find(s => s.id === selectedSector);
-      if (sectorObj && sectorObj.keywords.length > 0) {
-        const text = `${repo.name || ''} ${repo.description || ''} ${(repo.topics || []).join(' ')}`.toLowerCase();
-        const matchesKeywords = sectorObj.keywords.some(kw => text.includes(kw.toLowerCase()));
-        if (!matchesKeywords) return false;
-      }
-    }
-
+    
     // Tag filtering (frontend-side refinement)
     if (selectedTag) {
       const tags = [
@@ -610,6 +600,10 @@ export default function Dashboard() {
                       onClick={() => {
                         setSelectedSector(sector.id);
                         setSelectedTag(null);
+                        if (isSearchingSemantic) {
+                          setIsSearchingSemantic(false);
+                          setSemanticQuery('');
+                        }
                       }}
                       className={`flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold transition-all shrink-0 lg:shrink ${selectedSector === sector.id
                         ? (theme === 'dark' ? 'bg-blue-600/10 text-blue-500 border border-blue-500/20 shadow-lg shadow-blue-500/5' : 'bg-blue-600 text-white shadow-lg shadow-blue-600/20')
