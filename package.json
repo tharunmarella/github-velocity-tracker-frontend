@@ -13,6 +13,7 @@
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@tailwindcss/typography": "^0.5.19",
+    "@vercel/analytics": "^1.6.1",
     "browserslist": "^4.28.1",
     "caniuse-lite": "^1.0.30001761",
     "clsx": "^2.1.1",
