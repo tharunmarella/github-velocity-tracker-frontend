@@ -431,13 +431,13 @@ export default function Dashboard() {
 
             <ShinyButton
               onClick={() => setIsSubscribeModalOpen(true)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${theme === 'dark'
-                ? 'border-blue-500/30'
-                : 'border-blue-100 shadow-sm'
+              className={`px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${theme === 'dark'
+                ? 'bg-blue-600/20 border-blue-500/50 text-white hover:bg-blue-600/30'
+                : 'bg-blue-600 text-white border-blue-700 shadow-lg shadow-blue-500/25 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98]'
                 }`}
             >
-              <span className="hidden sm:inline">Stay Notified</span>
-              <span className="sm:hidden">Notify</span>
+              <span className="hidden sm:inline text-white">Stay Notified</span>
+              <span className="sm:hidden text-white">Notify</span>
             </ShinyButton>
 
             <button
@@ -573,16 +573,16 @@ export default function Dashboard() {
         <main className="max-w-7xl mx-auto px-4 py-6 sm:py-12 animate-in fade-in duration-700">
           <div className="mb-12 sm:mb-20">
             <div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 ${theme === 'dark' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
-              Star count ≠ momentum
+              GitHub Trend Radar
             </div>
             <h1 className={`text-2xl sm:text-5xl font-black tracking-tighter mb-8 leading-[1.1] ${theme === 'dark'
               ? 'bg-gradient-to-br from-white via-zinc-200 to-zinc-600 bg-clip-text text-transparent'
               : 'bg-gradient-to-br from-zinc-900 via-zinc-800 to-blue-600 bg-clip-text text-transparent'
               }`}>
-              Spot the next <span className={theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}>shift</span> before it happens.
+              Spot the next <span className={theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}>trend shift.</span>
             </h1>
             <p className={`${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'} text-lg sm:text-xl max-w-2xl font-medium leading-relaxed`}>
-              Total stars are a trailing indicator. We track <strong>velocity</strong>—the real-time growth rate that signals true developer adoption.
+              Tracking the fastest-growing open source projects and decoding developer intent in real-time.
             </p>
           </div>
 
@@ -674,15 +674,9 @@ export default function Dashboard() {
 
               {/* Sort By - Modern Segmented Control */}
               <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800/50' : 'bg-white border-zinc-200 shadow-sm'}`}>
-                <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 flex items-center justify-between ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp size={14} />
-                    Sort Strategy
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[8px] sm:text-[9px] font-bold text-zinc-400">
-                    <Info size={10} />
-                    PRIORITIZING GROWTH OVER TOTALS
-                  </div>
+                <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                  <TrendingUp size={14} />
+                  Sort Strategy
                 </h4>
 
                 <div className="flex flex-wrap gap-2">
