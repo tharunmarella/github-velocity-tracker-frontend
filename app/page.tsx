@@ -376,15 +376,15 @@ export default function Dashboard() {
             <span className="font-bold text-lg tracking-tight hidden md:inline">Velocity Radar.</span>
           </div>
 
-          <div className="flex-1 max-w-xl">
+          <div className="flex-1 max-w-2xl">
             <form onSubmit={handleSemanticSearch} className="relative group">
-              <Search className={`absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 transition-colors ${theme === 'dark' ? 'text-zinc-600 group-focus-within:text-blue-500' : 'text-zinc-300 group-focus-within:text-blue-600'}`} size={14} />
+              <Search className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${theme === 'dark' ? 'text-zinc-600 group-focus-within:text-blue-500' : 'text-zinc-300 group-focus-within:text-blue-600'}`} size={16} />
               <input
                 type="text"
                 value={semanticQuery}
                 onChange={(e) => setSemanticQuery(e.target.value)}
-                placeholder="Search projects semantically (e.g. 'nextjs auth' or 'ai agents')"
-                className={`w-full pl-9 sm:pl-11 pr-4 py-2 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-medium transition-all outline-none border ${theme === 'dark'
+                placeholder="(search semantically)"
+                className={`w-full pl-12 pr-10 py-3 rounded-2xl text-xs sm:text-sm font-medium transition-all outline-none border ${theme === 'dark'
                   ? 'bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600 focus:border-blue-500/50 focus:bg-zinc-900/80'
                   : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500/30 focus:bg-white shadow-sm'
                   }`}
@@ -673,14 +673,13 @@ export default function Dashboard() {
               </div>
 
               {/* Sort By - Modern Dropdown */}
-              <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800/50' : 'bg-white border-zinc-200 shadow-sm'}`}>
-                <div className="flex items-center justify-between">
-                  <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                    <TrendingUp size={14} />
-                    Sort Strategy
-                  </h4>
+              <div className="flex items-center justify-between mb-8 px-2">
+                <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                  <TrendingUp size={14} />
+                  Sort Strategy
+                </h4>
 
-                  <Select.Root value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+                <Select.Root value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
                     <Select.Trigger
                       className={cn(
                         "inline-flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border outline-none min-w-[160px]",
@@ -760,7 +759,6 @@ export default function Dashboard() {
                     </Select.Portal>
                   </Select.Root>
                 </div>
-              </div>
 
               {displayedRepos.length === 0 ? (
                 <div className={`border p-12 sm:p-20 rounded-[2rem] sm:rounded-[3rem] text-center flex flex-col items-center justify-center ${theme === 'dark' ? 'bg-zinc-900/10 border-zinc-900' : 'bg-zinc-50/50 border-zinc-100 shadow-inner'}`}>
