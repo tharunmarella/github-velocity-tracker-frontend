@@ -17,7 +17,6 @@ import remarkGfm from 'remark-gfm';
 
 // Magic UI Components
 import { GridPattern } from '@/components/magicui/grid-pattern';
-import { ShinyButton } from '@/components/magicui/shiny-button';
 import { BlurFade } from '@/components/magicui/blur-fade';
 import { cn } from '@/lib/utils';
 
@@ -430,16 +429,16 @@ export default function Dashboard() {
             </button>
             */}
 
-            <ShinyButton
+            <button
               onClick={() => setIsSubscribeModalOpen(true)}
               className={`px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${theme === 'dark'
                 ? 'bg-blue-600/20 border-blue-500/50 text-white hover:bg-blue-600/30'
                 : 'bg-blue-600 text-white border-blue-700 shadow-lg shadow-blue-500/25 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98]'
                 }`}
             >
-              <span className="hidden sm:inline text-white">Stay Notified</span>
+              <span className="hidden sm:inline">Stay Notified</span>
               <span className="sm:hidden text-white">Notify</span>
-            </ShinyButton>
+            </button>
 
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
