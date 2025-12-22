@@ -969,7 +969,7 @@ export default function Dashboard() {
                   : 'bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-500/20 active:scale-[0.98]'
                   }`}
               >
-                {subscribeLoading ? 'Processing...' : 'Secure My Spot'}
+                {subscribeLoading ? 'Processing...' : 'Subscribe'}
               </button>
             </form>
 
