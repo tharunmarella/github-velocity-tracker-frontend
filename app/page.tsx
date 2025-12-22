@@ -8,9 +8,10 @@ import {
   ExternalLink, ArrowUpRight,
   Filter, Search, Layers, Activity, AlertCircle,
   TrendingUp, Sun, Moon, X, Info, MessageSquare,
-  ArrowLeft,
+  ArrowLeft, Check, ChevronUp,
   ChevronDown, Flame
 } from 'lucide-react';
+import * as Select from '@radix-ui/react-select';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -672,34 +673,93 @@ export default function Dashboard() {
 
               </div>
 
-              {/* Sort By - Modern Segmented Control */}
+              {/* Sort By - Modern Dropdown */}
               <div className={`border p-4 sm:p-6 rounded-3xl ${theme === 'dark' ? 'bg-zinc-900/40 border-zinc-800/50' : 'bg-white border-zinc-200 shadow-sm'}`}>
-                <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                  <TrendingUp size={14} />
-                  Sort Strategy
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                    <TrendingUp size={14} />
+                    Sort Strategy
+                  </h4>
 
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { id: 'trend', label: 'Trending', icon: Flame },
-                    { id: 'velocity_7d', label: '7D Growth', icon: Zap },
-                    { id: 'stars', label: 'Top Stars', icon: Star },
-                    { id: 'forks', label: 'Most Forked', icon: GitFork },
-                  ].map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setSortBy(option.id as any)}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border ${sortBy === option.id
-                        ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20 scale-[1.02]'
-                        : theme === 'dark'
-                          ? 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300'
-                          : 'bg-zinc-50 border-zinc-200 text-zinc-400 hover:border-zinc-300 hover:text-zinc-600'
-                        }`}
+                  <Select.Root value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+                    <Select.Trigger
+                      className={cn(
+                        "inline-flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border outline-none min-w-[160px]",
+                        theme === 'dark'
+                          ? "bg-zinc-950 border-zinc-800 text-zinc-300 hover:border-zinc-700"
+                          : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-zinc-300 shadow-sm"
+                      )}
                     >
-                      <option.icon size={14} className={sortBy === option.id ? 'text-white' : 'text-current'} />
-                      {option.label}
-                    </button>
-                  ))}
+                      <Select.Value>
+                        <div className="flex items-center gap-2">
+                          {(() => {
+                            const option = [
+                              { id: 'trend', label: 'Trending', icon: Flame },
+                              { id: 'velocity_7d', label: '7D Growth', icon: Zap },
+                              { id: 'stars', label: 'Top Stars', icon: Star },
+                              { id: 'forks', label: 'Most Forked', icon: GitFork },
+                            ].find(o => o.id === sortBy);
+                            return option ? (
+                              <>
+                                <option.icon size={14} className="text-blue-500" />
+                                {option.label}
+                              </>
+                            ) : null;
+                          })()}
+                        </div>
+                      </Select.Value>
+                      <Select.Icon>
+                        <ChevronDown size={14} className="opacity-50" />
+                      </Select.Icon>
+                    </Select.Trigger>
+
+                    <Select.Portal>
+                      <Select.Content
+                        position="popper"
+                        sideOffset={8}
+                        className={cn(
+                          "z-[100] min-w-[200px] overflow-hidden rounded-2xl border p-1 shadow-2xl animate-in fade-in zoom-in-95 duration-200",
+                          theme === 'dark'
+                            ? "bg-zinc-950/90 border-zinc-800 backdrop-blur-xl"
+                            : "bg-white/90 border-zinc-200 backdrop-blur-xl"
+                        )}
+                      >
+                        <Select.ScrollUpButton className="flex items-center justify-center h-8 cursor-default">
+                          <ChevronUp size={14} />
+                        </Select.ScrollUpButton>
+
+                        <Select.Viewport className="p-1">
+                          {[
+                            { id: 'trend', label: 'Trending', icon: Flame },
+                            { id: 'velocity_7d', label: '7D Growth', icon: Zap },
+                            { id: 'stars', label: 'Top Stars', icon: Star },
+                            { id: 'forks', label: 'Most Forked', icon: GitFork },
+                          ].map((option) => (
+                            <Select.Item
+                              key={option.id}
+                              value={option.id}
+                              className={cn(
+                                "flex items-center gap-2 px-3 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl outline-none cursor-pointer transition-colors",
+                                theme === 'dark'
+                                  ? "text-zinc-400 focus:bg-zinc-900 focus:text-white"
+                                  : "text-zinc-500 focus:bg-zinc-50 focus:text-zinc-900"
+                              )}
+                            >
+                              <option.icon size={14} className="text-blue-500" />
+                              <Select.ItemText>{option.label}</Select.ItemText>
+                              <Select.ItemIndicator className="ml-auto">
+                                <Check size={14} className="text-blue-500" />
+                              </Select.ItemIndicator>
+                            </Select.Item>
+                          ))}
+                        </Select.Viewport>
+
+                        <Select.ScrollDownButton className="flex items-center justify-center h-8 cursor-default">
+                          <ChevronDown size={14} />
+                        </Select.ScrollDownButton>
+                      </Select.Content>
+                    </Select.Portal>
+                  </Select.Root>
                 </div>
               </div>
 
