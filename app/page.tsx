@@ -21,7 +21,7 @@ import { BlurFade } from '@/components/magicui/blur-fade';
 import { cn } from '@/lib/utils';
 
 // API Configuration - Backend URL for direct API calls
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://github-velocity-tracker-production.up.railway.app';
 
 interface Repository {
   name: string;

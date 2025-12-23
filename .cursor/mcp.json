@@ -6,6 +6,9 @@
         "shadcn@latest",
         "mcp"
       ]
+    },
+    "velocity-tracker": {
+      "url": "https://github-velocity-tracker-production.up.railway.app/mcp"
     }
   }
 }
