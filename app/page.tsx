@@ -9,7 +9,7 @@ import {
   Filter, Search, Layers, Activity, AlertCircle,
   TrendingUp, Sun, Moon, X, Info, MessageSquare,
   ArrowLeft, Check, ChevronUp,
-  ChevronDown, Flame
+  ChevronDown, Flame, Terminal, Copy
 } from 'lucide-react';
 import * as Select from '@radix-ui/react-select';
 import ReactMarkdown from 'react-markdown';
@@ -107,6 +107,8 @@ export default function Dashboard() {
   const [isSearchingSemantic, setIsSearchingSemantic] = useState(false);
   const [sortBy, setSortBy] = useState<'trend' | 'velocity_7d' | 'stars' | 'forks'>('trend');
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+  const [isMCPModalOpen, setIsMCPModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribeLoading, setSubscribeLoading] = useState(false);
   const [subscribeStatus, setSubscribeStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -403,31 +405,20 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-1 sm:gap-2 md:gap-4 shrink-0">
             {/* Admin Tools - Commented out for production
-            <button 
-              onClick={handleForceBackfill}
-              disabled={isBackfilling}
-              className={`p-1.5 sm:p-2 rounded-lg transition-all ${
-                isBackfilling 
-                  ? 'animate-pulse text-amber-500' 
-                  : theme === 'dark' ? 'text-zinc-400 hover:text-white hover:bg-zinc-900' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
-              }`}
-              title="1-Year Deep Backfill"
-            >
-              <Database size={18} />
-            </button>
-            <button 
-              onClick={handleForceUpdate}
-              disabled={isUpdating}
-              className={`p-1.5 sm:p-2 rounded-lg transition-all ${
-                isUpdating 
-                  ? 'animate-spin text-blue-500' 
-                  : theme === 'dark' ? 'text-zinc-400 hover:text-white hover:bg-zinc-900' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100'
-              }`}
-              title="Force Database Sync"
-            >
-              <RefreshCw size={18} />
-            </button>
+            ...
             */}
+
+            <button
+              onClick={() => setIsMCPModalOpen(true)}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${theme === 'dark'
+                ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800'
+                : 'bg-zinc-100 border-zinc-200 text-zinc-600 hover:bg-zinc-200'
+                }`}
+              title="Add to AI IDE (MCP)"
+            >
+              <Terminal size={14} className="text-blue-500" />
+              <span className="hidden md:inline">MCP</span>
+            </button>
 
             <button
               onClick={() => setIsSubscribeModalOpen(true)}
@@ -917,76 +908,86 @@ export default function Dashboard() {
       </footer>
 
       {/* Newsletter Modal */}
-      {isSubscribeModalOpen && (
+      ...
+      {/* MCP Modal */}
+      {isMCPModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div
-            className={`w-full max-w-md p-8 rounded-[2.5rem] border shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200 shadow-xl'
+            className={`w-full max-w-xl p-8 rounded-[2.5rem] border shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 ${theme === 'dark' ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200 shadow-xl'
               }`}
           >
             <div className="flex justify-between items-start mb-6">
               <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <MessageSquare size={24} className="text-white fill-white" />
+                <Terminal size={24} className="text-white" />
               </div>
               <button
-                onClick={() => {
-                  setIsSubscribeModalOpen(false);
-                  setSubscribeStatus(null);
-                }}
+                onClick={() => setIsMCPModalOpen(false)}
                 className={`p-2 rounded-xl transition-colors ${theme === 'dark' ? 'hover:bg-zinc-800 text-zinc-500 hover:text-white' : 'hover:bg-zinc-100 text-zinc-400 hover:text-zinc-900'}`}
               >
                 <X size={20} />
               </button>
             </div>
 
-            <h3 className="text-2xl font-black tracking-tight mb-2">Stay Notified</h3>
+            <h3 className="text-2xl font-black tracking-tight mb-2">Connect to AI IDE</h3>
             <p className={`text-sm font-medium leading-relaxed mb-8 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>
-              Join 2,400+ builders. Get the top 5 high-velocity projects delivered to your inbox every Monday morning.
+              Add semantic search capabilities to Cursor, Claude Desktop, or Windsurf. Search across 10,000+ high-velocity repositories directly from your AI.
             </p>
 
-            <form onSubmit={handleSubscribe} className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className={`block text-[10px] font-black uppercase tracking-[0.2em] mb-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@email.com"
-                  required
-                  className={`w-full px-5 py-4 rounded-2xl text-sm font-bold outline-none transition-all border ${theme === 'dark'
-                    ? 'bg-zinc-950 border-zinc-800 text-zinc-100 placeholder:text-zinc-700 focus:border-blue-500/50'
-                    : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500/30'
-                    }`}
-                />
+                <div className="flex items-center justify-between mb-3">
+                  <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                    MCP Configuration (JSON)
+                  </label>
+                  <button
+                    onClick={() => {
+                      const config = JSON.stringify({
+                        "mcpServers": {
+                          "velocity-tracker": {
+                            "url": "https://github-velocity-tracker-production.up.railway.app/mcp"
+                          }
+                        }
+                      }, null, 2);
+                      navigator.clipboard.writeText(config);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${theme === 'dark'
+                      ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                      : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 shadow-sm'
+                      }`}
+                  >
+                    {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                    {copied ? 'Copied' : 'Copy Code'}
+                  </button>
+                </div>
+                <div className={`p-5 rounded-2xl font-mono text-xs overflow-x-auto border ${theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-zinc-300' : 'bg-zinc-50 border-zinc-200 text-zinc-700'
+                  }`}>
+                  <pre>{`{
+  "mcpServers": {
+    "velocity-tracker": {
+      "url": "https://github-velocity-tracker-production.up.railway.app/mcp"
+    }
+  }
+}`}</pre>
+                </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={subscribeLoading}
-                className={`w-full py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${subscribeLoading
-                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-500/20 active:scale-[0.98]'
-                  }`}
-              >
-                {subscribeLoading ? 'Processing...' : 'Subscribe'}
-              </button>
-            </form>
-
-            {subscribeStatus && (
-              <div className={`mt-6 p-4 rounded-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${subscribeStatus.type === 'success'
-                ? 'bg-green-500/10 border-green-500/20 text-green-500'
-                : 'bg-red-500/10 border-red-500/20 text-red-500'
-                }`}>
-                <Info size={16} />
-                <p className="text-[11px] font-black uppercase tracking-wider">
-                  {subscribeStatus.message}
-                </p>
+              <div className={`p-5 rounded-2xl border ${theme === 'dark' ? 'bg-blue-500/5 border-blue-500/10' : 'bg-blue-50 border-blue-100'}`}>
+                <h4 className={`text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+                  <Info size={14} />
+                  How to install
+                </h4>
+                <ol className={`text-xs font-bold leading-relaxed space-y-2 list-decimal list-inside ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                  <li>Copy the JSON configuration above</li>
+                  <li>In Cursor: Settings → Models → MCP → Add New</li>
+                  <li>Choose type "SSE" and paste the URL: <span className="text-blue-500">https://github-velocity-tracker-production.up.railway.app/mcp</span></li>
+                </ol>
               </div>
-            )}
+            </div>
 
             <p className={`mt-8 text-center text-[10px] font-bold ${theme === 'dark' ? 'text-zinc-600' : 'text-zinc-400'}`}>
-              No spam. Unsubscribe anytime with one click.
+              Built on the open Model Context Protocol.
             </p>
           </div>
         </div>
